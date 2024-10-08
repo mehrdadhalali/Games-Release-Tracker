@@ -1,0 +1,107 @@
+name: Check Extract Code
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions: write-all
+
+jobs:
+
+    # Test and Lint Steam
+    test_steam:
+    name: Test and Lint Steam Scraper
+    runs-on: ubuntu-latest
+
+    steps:
+    # Checkout the code
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    # Install Python
+    - name: Install Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+
+    # Install required packages
+    - name: Install packages
+      run: |
+        pip install -r ./web_scraping/steam_scraper/requirements.txt
+
+
+    - name: Pytest Steam
+      run: |
+        pytest web_scraping/steam_scraper --cov
+      continue-on-error: false
+
+    - name: Lint Steam
+      run: |
+        pylint web_scraping/steam_scraper/*.py --fail-under=8
+
+        
+    # Test and Lint GOG
+    test_gog:
+    name: Test and Lint GOG Scraper
+    runs-on: ubuntu-latest
+
+    steps:
+    # Checkout the code
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    # Install Python
+    - name: Install Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+
+    # Install required packages
+    - name: Install packages
+      run: |
+        pip install -r ./web_scraping/gog_scraper/requirements.txt
+
+
+    - name: Pytest GOG
+      run: |
+        pytest web_scraping/gog_scraper --cov
+      continue-on-error: false
+
+    - name: Lint GOG
+      run: |
+        pylint web_scraping/gog_scraper/*.py --fail-under=8
+
+  
+    # Test and Lint Epic Games
+    test_gog:
+    name: Test and Lint Epic Games Scraper
+    runs-on: ubuntu-latest
+
+    steps:
+    # Checkout the code
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    # Install Python
+    - name: Install Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+
+    # Install required packages
+    - name: Install packages
+      run: |
+        pip install -r ./web_scraping/epic_games_scraper/requirements.txt
+
+
+    - name: Pytest Epic Games
+      run: |
+        pytest web_scraping/epic_games_scraper --cov
+      continue-on-error: false
+
+    - name: Lint Epic Games
+      run: |
+        pylint web_scraping/epic_games_scraper/*.py --fail-under=8

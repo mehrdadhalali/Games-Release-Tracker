@@ -1,0 +1,43 @@
+name: Check Report Generator
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions: write-all
+
+jobs:
+
+    test_load_transform:
+    name: Test and Lint Report Generator
+    runs-on: ubuntu-latest
+
+    steps:
+    # Checkout the code
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    # Install Python
+    - name: Install Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+
+    # Install required packages
+    - name: Install packages
+      run: |
+        pip install -r ./report/requirements.txt
+
+
+    - name: Pytest Report Generator
+      run: |
+        pytest report --cov
+      continue-on-error: false
+
+    - name: Lint Report Generator
+      run: |
+        pylint report/*.py --fail-under=8
+        
