@@ -1,0 +1,43 @@
+name: Check Transform/Load
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions: write-all
+
+jobs:
+
+    test_load_transform:
+    name: Test and Lint Load/Transform
+    runs-on: ubuntu-latest
+
+    steps:
+    # Checkout the code
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    # Install Python
+    - name: Install Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+
+    # Install required packages
+    - name: Install packages
+      run: |
+        pip install -r ./load_to_rds/requirements.txt
+
+
+    - name: Pytest Transform/Load
+      run: |
+        pytest load_to_rds --cov
+      continue-on-error: false
+
+    - name: Lint Transform/Load
+      run: |
+        pylint load_to_rds/*.py --fail-under=8
+        
