@@ -11,7 +11,7 @@ permissions: write-all
 
 jobs:
 
-    test_load_transform:
+  test_report:
     name: Test and Lint Report Generator
     runs-on: ubuntu-latest
 
