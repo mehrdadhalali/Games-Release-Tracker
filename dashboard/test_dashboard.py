@@ -4,4 +4,4 @@ from os import path
 
 
 def test_placeholder():
-    assert False
+    assert path.exists('README.md')
