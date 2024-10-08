@@ -11,7 +11,7 @@ permissions: write-all
 
 jobs:
 
-    test_load_transform:
+  test_load_transform:
     name: Test and Lint Load/Transform
     runs-on: ubuntu-latest
 

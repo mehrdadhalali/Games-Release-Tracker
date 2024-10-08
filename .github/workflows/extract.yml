@@ -11,8 +11,8 @@ permissions: write-all
 
 jobs:
 
-    # Test and Lint Steam
-    test_steam:
+  # Test and Lint Steam
+  test_steam:
     name: Test and Lint Steam Scraper
     runs-on: ubuntu-latest
 
@@ -43,8 +43,8 @@ jobs:
         pylint web_scraping/steam_scraper/*.py --fail-under=8
 
         
-    # Test and Lint GOG
-    test_gog:
+  # Test and Lint GOG
+  test_gog:
     name: Test and Lint GOG Scraper
     runs-on: ubuntu-latest
 
@@ -75,8 +75,8 @@ jobs:
         pylint web_scraping/gog_scraper/*.py --fail-under=8
 
   
-    # Test and Lint Epic Games
-    test_gog:
+  # Test and Lint Epic Games
+  test_epic:
     name: Test and Lint Epic Games Scraper
     runs-on: ubuntu-latest
 
