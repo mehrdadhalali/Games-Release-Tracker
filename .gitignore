@@ -1,0 +1,20 @@
+
+# Environment variables
+*.env
+
+# Virtual environments
+venv/
+.venv/
+
+__pycache__
+.pytest_cache
+.coverage
+.DS_Store
+.vscode/
+
+# Logs
+*.log
+
+# Data
+*.csv
+*.json
