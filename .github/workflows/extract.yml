@@ -2,9 +2,11 @@ name: Check Extract Code
 
 on:
   push:
-    branches: [main]
+    branches: 
+      - [extract-*]
   pull_request:
-    branches: [main]
+    branches: 
+      - [extract-*]
   workflow_dispatch:
 
 permissions: write-all
