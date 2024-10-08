@@ -15,8 +15,8 @@ resource "aws_security_group" "games-tracker-db-sg" {
     name = "c13-games-tracker-db-sg"
     vpc_id = var.VPC_ID
     ingress {
-    from_port        = 5432
-    to_port          = 5432
+    from_port        = var.DB_PORT
+    to_port          = var.DB_PORT
     protocol         = "TCP"
     cidr_blocks      = ["0.0.0.0/0"]
   }

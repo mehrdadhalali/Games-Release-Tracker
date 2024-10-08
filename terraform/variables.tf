@@ -28,6 +28,11 @@ variable "DB_PASSWORD" {
   
 }
 
+variable "DB_PORT" {
+    type = number
+  
+}
+
 variable "SUBNET_NAME" {
     type = string
   
