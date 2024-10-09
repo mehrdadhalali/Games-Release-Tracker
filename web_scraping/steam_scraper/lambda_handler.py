@@ -14,7 +14,7 @@ def lambda_handler(event, context):
     try:
         time_arg = datetime.fromisoformat(time_arg)
     except ValueError:
-        time_arg = None
+        time_arg = datetime.now()
 
     listings = collect_and_parse_games(time_arg)
     return {
