@@ -23,3 +23,10 @@ def lambda_handler(event, context):
             'data': listings
         }
     }
+
+
+if __name__ == "__main__":
+    lambda_event = {
+        'time': "09-10-2024"
+    }
+    print(lambda_handler(lambda_event, None))
