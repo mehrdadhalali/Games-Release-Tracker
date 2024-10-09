@@ -110,7 +110,6 @@ resource "aws_iam_role_policy" "lambda_role_policy" {
   policy = data.aws_iam_policy_document.lambda_permissions_policy.json
 }
 
-
 # Exract ECR's
 data "aws_ecr_image" "gog-scraper-image" {
   repository_name = "c13-lakshmibai-gog-scraper"
