@@ -1,4 +1,5 @@
 """Tests for the scrape_steam.py file."""
+
 # pylint: skip-file
 
 from unittest import mock
