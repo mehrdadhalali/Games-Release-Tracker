@@ -1,8 +1,8 @@
 """Script to scrape the latest games from GOG."""
 
+from datetime import datetime
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
-import requests as req
 
 BASE_URL = "https://www.gog.com/en/games?releaseStatuses=new-arrival&order=desc:releaseDate&hideDLCs=true&releaseDateRange=2024,2024&page="
 
@@ -39,6 +39,16 @@ def get_game_data_from_url(game_url: str) -> dict:
 
     image_url = soup.find("img", {"class": "mobile-slider__image"}).get("src")
 
+    price_span = soup.find("span", {"selenium-id": "ProductFinalPrice"})
+
+    if price_span is not None:
+
+        price_str = price_span.text
+    else:
+        price_str = "0"
+
+    current_price = int(float(price_str)*100)
+
     details_rows = soup.find_all("div", {"class": "table__row details__row"})
     for row in details_rows:
         row_label = row.find(
@@ -52,18 +62,56 @@ def get_game_data_from_url(game_url: str) -> dict:
             tag_links = row.find_all("a")
             tags = [link.text for link in tag_links]
 
+    rating_rows = soup.find_all(
+        "div", {"class": "table__row details__rating details__row"})
+
+    for row in rating_rows:
+        row_label = row.find(
+            "div", {"class": "details__category table__row-label"}).text
+        if "Works on:" in row_label:
+            operating_systems = row.find(
+                "div", {"class": "details__content table__row-content"}).text.strip()
+
+        elif "Release date:" in row_label:
+            release_date = row.find(
+                "div", {"class": "details__content table__row-content"}).text.strip()
+
+    release_date = datetime.strptime(release_date[3:13],
+                                     "%Y-%m-%d")
+    release_date = datetime.strftime(release_date,
+                                     "%d/%m/%Y")
+
     return {"title": title,
             "description": description,
-            "image_url": image_url,
+            "img_url": image_url,
             "genres": genres,
-            "tags": tags}
+            "tags": tags,
+            "operating_systems": operating_systems,
+            "current_price": current_price,
+            "release_date": release_date,
+            "url": game_url}
+
+
+def get_games_for_the_day(day: datetime = datetime.today(), page_number: int = 1) -> list[dict]:
+    """Get all of the details of the games for a given day."""
+
+    url = BASE_URL + str(page_number)
+
+    html = get_html(url)
+
+    game_urls = get_game_urls_from_page(html)
+
+    game_details = list(map(get_game_data_from_url, game_urls))
+
+    day_str = datetime.strftime(day, "%d/%m/%Y")
+
+    relevant_games = [game for game in game_details
+                      if game["release_date"] == day_str]
+
+    return relevant_games
 
 
 if __name__ == "__main__":
 
-    url = BASE_URL + "1"
-    html = get_html(url)
-
-    urls = get_game_urls_from_page(html)
-
-    print(get_game_data_from_url(urls[0]))
+    games = get_games_for_the_day(day=datetime(2024, 10, 8))
+    print([game["title"] for game in games])
