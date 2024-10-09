@@ -1,5 +1,7 @@
 """Script to web scrape the Steam new-releases page for new games."""
 
+from json import dumps
+from datetime import datetime
 import re
 
 import requests as req
@@ -124,29 +126,26 @@ def parse_game_listing(game_listing: bs4.Tag) -> dict:
     steam_app_page_source = load_page_source(steam_app)
     app_soup = bs4.BeautifulSoup(steam_app_page_source, 'html.parser')
 
-    description = scrape_game_description(app_soup)
-    os = scrape_game_operating_systems(app_soup)
-    genres = scrape_game_genres(app_soup)
-    tags = scrape_game_tags(app_soup)
-
     return {
         'title': parse_title(game_listing),
-        'description': description,
+        'description': scrape_game_description(app_soup),
         'release_date': parse_release_date(game_listing),
-        'operating_systems': os,
-        'genres': genres,
-        'tags': tags,
+        'operating_systems': scrape_game_operating_systems(app_soup),
+        'genres': scrape_game_genres(app_soup),
+        'tags': scrape_game_tags(app_soup),
         'current_price': parse_price(game_listing),
         'url': parse_game_url(game_listing),
         'img_url': parse_image_url(game_listing),
     }
 
 
-if __name__ == "__main__":
+def collect_and_parse_games(scrape_date: datetime) -> str:
+    """Collects the listings and parses them for information, adding them
+    to an overall dictionary which is returned a JSON string for the lambda."""
     source = load_page_source(STEAM_NEW_RELEASE_URL)
-    listings = get_page_listings(source)
+    listings = get_page_listings(source, scrape_date)
     listings_dict = {
         "platform": "steam",
         "listings": [parse_game_listing(x) for x in listings]
     }
-    print(listings_dict)
+    return dumps(listings_dict)
