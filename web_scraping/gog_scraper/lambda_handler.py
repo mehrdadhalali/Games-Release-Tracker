@@ -17,6 +17,10 @@ def lambda_handler(event, context):  # pylint: disable=W0613
         for day in dates[1:]:
             games_list["listings"].extend(get_games_for_the_day(day))
 
+    print("Games added: ")
+    for listing in games_list["listings"]:
+        print(listing["title"])
+
     return {
         "statusCode": 200,
         "body": {

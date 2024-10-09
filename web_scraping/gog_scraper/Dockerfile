@@ -13,4 +13,4 @@ COPY scrape_gog_game.py .
 COPY scrape_gog.py .
 
 # Runs pipeline
-CMD ["pipeline.lambda_handler"]
+CMD ["lambda_handler.lambda_handler"]
