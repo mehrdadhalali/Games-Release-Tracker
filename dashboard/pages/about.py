@@ -13,14 +13,14 @@ st.title("About Games Tracker")
 cols = st.columns([1, 3])
 
 with cols[0]:
-    st.image("logo.png", width=250)
+    st.image("pages/logo.png", width=250)
 
 with cols[1]:
-    st.write(" <br> <br> ", unsafe_allow_html=True)
+    st.write(" <br> ", unsafe_allow_html=True)
     st.write("""Games Tracker is a comprehensive tool designed to help gamers discover new releases
             across multiple PC gaming platforms, including Steam, GOG, and Epic Games.
             Our mission is to provide an intuitive interface that allows users to track
-            the latest game releases, analyze trends, and stay informed about the gaming landscape.
+            the latest game releases, analyse trends, and stay informed about the gaming landscape.
             With a focus on user experience, Games Tracker aims to empower gamers and developers alike
             by offering valuable insights into the ever-evolving world of gaming.""")
 
