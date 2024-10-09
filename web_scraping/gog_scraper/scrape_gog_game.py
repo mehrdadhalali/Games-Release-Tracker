@@ -81,12 +81,9 @@ def get_game_data_from_url(game_url: str) -> dict:
 
     title = soup.find(
         "h1", {"class": "productcard-basics__title"}).text.strip()
-
     description = soup.find(
         "div", {"class": "description"}).text.strip()
-
     image_url = soup.find("img", {"class": "mobile-slider__image"}).get("src")
-
     price_div = soup.find("div", {"selenium-id":
                                   "ProductActionsBody"})
     current_price = find_price(price_div)
