@@ -29,10 +29,21 @@ def load_page_source(url: str) -> str:
 
 
 def get_page_listings(page_source: str) -> list[bs4.Tag]:
-    """Returns a list of Steam game listing objects."""
+    """Returns a list of Steam game listing objects released on a certain date."""
     page_soup = bs4.BeautifulSoup(page_source, 'html.parser')
     search_result_rows = page_soup.find_all('a', class_='search_result_row')
     return search_result_rows
+
+
+def filter_timely_listings(listings: list[bs4.Tag], filter_date: datetime) -> list[bs4.Tag]:
+    """Filters game release listings to match a given date."""
+    timely_listings = []
+    for listing in listings:
+        release_date = parse_release_date(listing)
+        if release_date and release_date.date() == filter_date.date():
+            timely_listings.append(listing)
+
+    return timely_listings
 
 
 def parse_game_url(game_listing: bs4.Tag) -> str:
@@ -57,10 +68,24 @@ def parse_title(game_listing: bs4.Tag) -> str:
     return title_tag.text if title_tag else None
 
 
-def parse_release_date(game_listing: bs4.Tag) -> str:
+def parse_release_date(game_listing: bs4.Tag) -> datetime:
     """Extracts the release date from the game listing."""
     release_tag = game_listing.find('div', class_='search_released')
-    return release_tag.text.strip() if release_tag else None
+    release_date_str = release_tag.text.strip() if release_tag else None
+    date_formats = [
+        '%d %B, %Y',
+        '%B %Y',
+        '%d %b, %Y',
+        '%Y-%m-%d'
+    ]
+
+    if release_date_str:
+        for format in date_formats:
+            try:
+                return datetime.strptime(release_date_str, format)
+            except ValueError:
+                pass
+    return None
 
 
 def parse_price(game_listing: bs4.Tag) -> str:
@@ -129,7 +154,7 @@ def parse_game_listing(game_listing: bs4.Tag) -> dict:
     return {
         'title': parse_title(game_listing),
         'description': scrape_game_description(app_soup),
-        'release_date': parse_release_date(game_listing),
+        'release_date': datetime.strftime(parse_release_date(game_listing), '%d %b %Y'),
         'operating_systems': scrape_game_operating_systems(app_soup),
         'genres': scrape_game_genres(app_soup),
         'tags': scrape_game_tags(app_soup),
@@ -143,9 +168,13 @@ def collect_and_parse_games(scrape_date: datetime) -> str:
     """Collects the listings and parses them for information, adding them
     to an overall dictionary which is returned a JSON string for the lambda."""
     source = load_page_source(STEAM_NEW_RELEASE_URL)
-    listings = get_page_listings(source, scrape_date)
+    listings = get_page_listings(source)
+    in_date_listings = filter_timely_listings(listings, scrape_date)
     listings_dict = {
         "platform": "steam",
-        "listings": [parse_game_listing(x) for x in listings]
+        "listings": [parse_game_listing(x) for x in in_date_listings]
     }
     return dumps(listings_dict)
+
+
+print(collect_and_parse_games(datetime.now()))
