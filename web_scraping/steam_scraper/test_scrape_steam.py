@@ -6,7 +6,26 @@ from unittest import mock
 
 import pytest
 
-from scrape_steam import load_page_source
+from scrape_steam import load_page_source, format_price
+
+
+@pytest.mark.parametrize("price_str, expected", [
+    ("$12.34", 1234),
+    ("£45.67", 4567),
+    ("€89.10", 8910),
+    ("1234", 123400),
+    ("free", 0),
+    ("  fReE", 0),
+    ("   FREE   ", 0),
+    ("$0.00", 0),
+    ("£0.99", 99),
+    ("10", 1000),
+    ("$100", 10000),
+])
+def test_format_price(price_str, expected):
+    """Tests that the format price function returns appropriate ints
+    for a range of given values."""
+    assert format_price(price_str) == expected
 
 
 @mock.patch('requests.get')
