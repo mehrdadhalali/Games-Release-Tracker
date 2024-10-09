@@ -1,0 +1,7 @@
+[theme]
+base = "dark"
+primaryColor = "#6a0dad"  # Purple primary color
+backgroundColor = "#121212" # Dark background color
+secondaryBackgroundColor = "#1e1e1e" # Slightly lighter background
+textColor = "#ffffff"       # White text color
+font = "monospace"         # Font style
