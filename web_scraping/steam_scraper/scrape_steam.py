@@ -164,15 +164,16 @@ def parse_game_listing(game_listing: bs4.Tag) -> dict:
     }
 
 
-def collect_and_parse_games(scrape_date: datetime) -> str:
+def collect_and_parse_games(scrape_date: datetime = None) -> str:
     """Collects the listings and parses them for information, adding them
     to an overall dictionary which is returned a JSON string for the lambda."""
     source = load_page_source(STEAM_NEW_RELEASE_URL)
     listings = get_page_listings(source)
-    in_date_listings = filter_timely_listings(listings, scrape_date)
+    if scrape_date:
+        listings = filter_timely_listings(listings, scrape_date)
     listings_dict = {
         "platform": "steam",
-        "listings": [parse_game_listing(x) for x in in_date_listings]
+        "listings": [parse_game_listing(x) for x in listings]
     }
     return dumps(listings_dict)
 
