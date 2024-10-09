@@ -15,20 +15,29 @@ def get_html(url: str) -> str:
         return html
 
 
+def format_price(price_str: str) -> int:
+    """Formats a price's string."""
+
+    if "free" in price_str.lower():
+        return 0
+
+    return int(float(price_str)*100)
+
+
 def find_price(price_div: Tag) -> int:
     """Given a div containing a game's price, finds said price."""
 
     price_str = price_div.find("span", {"selenium-id":
                                         "ProductFinalPrice"})
-    if price_str:
-        return int(float(price_str.text)*100)
 
-    price_str = price_div.find("span", {"class":
-                                        "product-actions-price__final-amount"}).text
-    if "FREE" in price_str:
-        return 0
+    if not price_str:
+        price_str = price_div.find("span", {"class":
+                                            "product-actions-price__final-amount"})
 
-    raise ValueError("The price is somewhere else!")
+    if not price_str:
+        raise ValueError("The price is somewhere else!")
+
+    return format_price(price_str.text)
 
 
 def format_os(os_string: str) -> str:
