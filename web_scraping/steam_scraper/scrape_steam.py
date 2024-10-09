@@ -176,6 +176,3 @@ def collect_and_parse_games(scrape_date: datetime = None) -> str:
         "listings": [parse_game_listing(x) for x in listings]
     }
     return dumps(listings_dict)
-
-
-print(collect_and_parse_games(datetime.now()))
