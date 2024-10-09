@@ -34,6 +34,9 @@ def get_games_for_the_day(day: datetime = datetime.today(), page_number: int = 1
         if game_details["release_date"] < day:
             break
         if game_details["release_date"] == day:
+            game_details["release_date"] = datetime.strftime(
+                game_details["release_date"],
+                "%d/%m/%Y")
             game_details_list.append(game_details)
 
     return dumps({
