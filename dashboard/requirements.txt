@@ -1,3 +1,8 @@
 pytest
 pylint
 pytest--cov
+streamlit
+python-dotenv
+boto3
+altair
+pandas
