@@ -80,9 +80,9 @@ def parse_release_date(game_listing: bs4.Tag) -> datetime:
     ]
 
     if release_date_str:
-        for format in date_formats:
+        for fmt in date_formats:
             try:
-                return datetime.strptime(release_date_str, format)
+                return datetime.strptime(release_date_str, fmt)
             except ValueError:
                 pass
     return None
@@ -141,7 +141,7 @@ def scrape_game_operating_systems(app_soup: bs4.BeautifulSoup) -> list[str]:
             if platform_class in platform_mapping:
                 platforms.append(platform_mapping[platform_class])
 
-    return platforms if platforms else []
+    return list(set(platforms)) if platforms else []
 
 
 def parse_game_listing(game_listing: bs4.Tag) -> dict:
