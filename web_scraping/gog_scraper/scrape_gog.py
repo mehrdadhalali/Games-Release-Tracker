@@ -35,11 +35,7 @@ def get_games_for_the_day(day: datetime = datetime.today(), page_number: int = 1
         if game_details["release_date"] == day:
             game_details_list.append(game_details)
 
-    return game_details_list
-
-
-if __name__ == "__main__":
-
-    games = get_games_for_the_day(datetime(2024, 10, 8))
-
-    print([game["current_price"] for game in games])
+    return {
+        "platform": "gog",
+        "listings": game_details_list
+    }
