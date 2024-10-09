@@ -1,6 +1,7 @@
 """Script for the AWS lambda handler."""
 
 from datetime import datetime
+from json import dumps
 
 from scrape_gog import get_games_for_the_day
 
@@ -8,7 +9,7 @@ from scrape_gog import get_games_for_the_day
 def lambda_handler(event, context):  # pylint: disable=W0613
     """The main Lambda function"""
 
-    dates = [datetime(2024, 10, 8)]
+    dates = [datetime.today()]
 
     games_list = get_games_for_the_day(dates[0])
 
@@ -17,13 +18,9 @@ def lambda_handler(event, context):  # pylint: disable=W0613
         for day in dates[1:]:
             games_list["listings"].extend(get_games_for_the_day(day))
 
-    print("Games added: ")
-    for listing in games_list["listings"]:
-        print(listing["title"])
-
-    return {
+    return dumps({
         "statusCode": 200,
         "body": {
             "data": games_list
         }
-    }
+    })
