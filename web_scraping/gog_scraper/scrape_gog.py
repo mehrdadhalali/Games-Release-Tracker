@@ -39,9 +39,24 @@ def get_game_data_from_url(game_url: str) -> dict:
 
     image_url = soup.find("img", {"class": "mobile-slider__image"}).get("src")
 
+    details_rows = soup.find_all("div", {"class": "table__row details__row"})
+    for row in details_rows:
+        row_label = row.find(
+            "div", {"class": "details__category table__row-label"}).text
+
+        if row_label == "Genre:":
+            genre_links = row.find_all("a")
+            genres = [link.text for link in genre_links]
+
+        elif row_label == "Tags:":
+            tag_links = row.find_all("a")
+            tags = [link.text for link in tag_links]
+
     return {"title": title,
             "description": description,
-            "image_url": image_url}
+            "image_url": image_url,
+            "genres": genres,
+            "tags": tags}
 
 
 if __name__ == "__main__":
@@ -51,4 +66,4 @@ if __name__ == "__main__":
 
     urls = get_game_urls_from_page(html)
 
-    print(get_game_data_from_url(urls[5]))
+    print(get_game_data_from_url(urls[0]))
