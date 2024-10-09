@@ -11,10 +11,12 @@ provider "aws" {
 
 ### SET UP POSTGRES RDS
 
+# gets subnet group
 data "aws_db_subnet_group" "public-subnet-group" {
     name = var.SUBNET_NAME
 }
 
+# creates relevent security group
 resource "aws_security_group" "games-tracker-db-sg" {
     name = "c13-games-tracker-db-sg"
     vpc_id = var.VPC_ID
@@ -26,6 +28,7 @@ resource "aws_security_group" "games-tracker-db-sg" {
   }
 }
 
+# creates RDS
 resource "aws_db_instance" "games-db" {
     allocated_storage            = 10
     db_name                      = var.DB_NAME
@@ -131,7 +134,6 @@ resource "aws_lambda_function" "gog-scraper-lambda" {
   image_uri = data.aws_ecr_image.gog-scraper-image.image_uri
 }
 
-# The lambda functions
 resource "aws_lambda_function" "steam-scraper-lambda" {
   function_name = "c13-lakshmibai-steam-scraper-lambda"
   role          = aws_iam_role.iam_for_lambda.arn
