@@ -69,4 +69,50 @@ FOREIGN KEY (platform_id) REFERENCES platform(platform_id)
 );
 
 
+INSERT INTO subscriber 
+    (sub_name , sub_email )
+VALUES
+    ( 'Michael Hassan' , 'trainee.michael.hassan@sigmalabs.co.uk' ),
+    ( 'Mehrdad Halali' , 'trainee.mehrdad.halali@sigmalabs.co.uk' ),
+    ( 'Leon Simpson' , 'trainee.leon.simpson@sigmalabs.co.uk' ),
+    ( 'Paula Uusnakki' , 'trainee.paula.uusnakki@sigmalabs.co.uk' )
+    ;
+
+
+INSERT INTO genre 
+    (genre_name)
+VALUES
+    ( 'Indie'),
+    ( 'Action'),
+    ( 'Casual' ),
+    ( 'Adventure'),
+    ( 'Simulation'),
+    ( 'RPG'),
+    ( 'Strategy' ),
+    ( 'Action-Adventure'),
+    ( 'Sports'),
+    ( 'Racing'),
+    ( 'Software' ),
+    ( 'Early Access'),
+    ( 'Free To Play'),
+    ( 'Massively Multiplayer')
+    ;
+
+INSERT INTO platform 
+    (platform_name)
+VALUES
+    ( 'Steam'),
+    ( 'GOG'),
+    ( 'Epic')
+    ;
+
+INSERT INTO operating_system 
+    (os_name)
+VALUES
+    ( 'Windows'),
+    ( 'Mac'),
+    ( 'Linux')
+    ;
+
+
 
