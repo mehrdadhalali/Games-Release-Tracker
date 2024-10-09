@@ -1,3 +1,4 @@
+# pylint: disable=C0103
 """
 This is the main dashboard for the Games Tracker Streamlit application.
 It includes data visualisations on the information collected from Steam, GOG and Epic,
@@ -10,7 +11,7 @@ import streamlit as st
 # Page configuration
 st.set_page_config(layout="wide")
 
-cols = st.columns([2, 1, 1])
+cols = st.columns([2, 1, 1, 0.5])
 with cols[0]:
     st.title("Games Tracker")
 
@@ -47,6 +48,6 @@ with cols[2]:
     else:
         st.warning("Please select both start and end dates.")
 
-cols = st.columns([4, 1])
-with cols[1]:
-    show_nsfw = st.checkbox("Show NSFW Games")
+with cols[3]:
+    st.write(" <br> ", unsafe_allow_html=True)
+    show_nsfw = st.checkbox("NSFW")
