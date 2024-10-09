@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from urllib.request import urlopen
-from bs4 import BeautifulSoup, Tag
+from bs4 import BeautifulSoup
 
 
 def get_html(url: str) -> str:
@@ -56,6 +56,9 @@ def get_game_data_from_url(game_url: str) -> dict:
     current_price = int(float(price_str)*100)
 
     details_rows = soup.find_all("div", {"class": "table__row details__row"})
+
+    genres = []
+    tags = []
     for row in details_rows:
         row_label = row.find(
             "div", {"class": "details__category table__row-label"}).text
