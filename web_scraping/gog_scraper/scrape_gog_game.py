@@ -3,7 +3,7 @@
 from datetime import datetime
 from urllib.request import urlopen
 
-from bs4 import BeautifulSoup, Tag
+from bs4 import BeautifulSoup
 
 
 def get_html(url: str) -> str:
@@ -24,7 +24,7 @@ def format_price(price_str: str) -> int:
     return int(float(price_str)*100)
 
 
-def find_price(price_div: Tag) -> int:
+def find_price(price_div) -> int:
     """Given a div containing a game's price, finds said price."""
 
     price_str = price_div.find("span", {"selenium-id":
