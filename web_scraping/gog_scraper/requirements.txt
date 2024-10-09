@@ -1,3 +1,5 @@
 pytest
 pylint
 pytest--cov
+bs4
+requests
