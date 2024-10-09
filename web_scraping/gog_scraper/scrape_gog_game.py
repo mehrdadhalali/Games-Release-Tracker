@@ -65,7 +65,8 @@ def extract_data_from_rows(rows: list[str], label_class: str, required_label: st
 
 
 def get_game_data_from_url(game_url: str) -> dict:
-    """Given a game's URL, returns all of its relevant data."""
+    """Given a game's URL, returns all of its relevant data.
+        The only thing that needs processing afterwards is the release date."""
 
     soup = BeautifulSoup(get_html(game_url), "html.parser")
 
@@ -109,8 +110,6 @@ def get_game_data_from_url(game_url: str) -> dict:
 
     release_date = datetime.strptime(release_date[3:13],
                                      "%Y-%m-%d")
-    release_date = datetime.strftime(release_date,
-                                     "%d/%m/%Y")
 
     return {"title": title,
             "description": description,

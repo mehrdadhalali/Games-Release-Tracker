@@ -19,4 +19,5 @@ TBC
 
 ## 📄 Files Explained
 - `scrape_gog.py`: Scrapes the main page of GOG to get the URL's of the newest games.
+- `scrape_gog_game.py`: Scrapes a single game's data from GOG.
 - `test_scrape_gog.py`: Test files.

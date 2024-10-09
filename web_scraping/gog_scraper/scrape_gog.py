@@ -1,6 +1,5 @@
 """Script to scrape the latest games from GOG."""
 
-from time import perf_counter
 from datetime import datetime
 
 from bs4 import BeautifulSoup
@@ -24,24 +23,16 @@ def get_games_for_the_day(day: datetime = datetime.today(), page_number: int = 1
     """Get all of the details of the games for a given day."""
 
     url = BASE_URL + str(page_number)
-
     html = get_html(url)
 
-    game_urls = get_game_urls_from_page(html)[0:5]
+    game_urls = get_game_urls_from_page(html)
 
-    game_details = list(map(get_game_data_from_url, game_urls))
+    game_details_list = []
+    for game_url in game_urls:
+        game_details = get_game_data_from_url(game_url)
+        if game_details["release_date"] < day:
+            break
+        if game_details["release_date"] == day:
+            game_details_list.append(game_details)
 
-    day_str = datetime.strftime(day, "%d/%m/%Y")
-
-    relevant_games = [game for game in game_details
-                      if game["release_date"] == day_str]
-
-    return relevant_games
-
-
-if __name__ == "__main__":
-
-    start = perf_counter()
-    games = get_games_for_the_day(day=datetime(2024, 10, 8))
-    print([game["operating_systems"] for game in games])
-    print(perf_counter() - start)
+    return game_details_list
