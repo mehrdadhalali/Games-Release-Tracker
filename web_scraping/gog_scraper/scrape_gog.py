@@ -2,10 +2,12 @@
 
 from time import perf_counter
 from datetime import datetime
+
 from bs4 import BeautifulSoup
+
 from scrape_gog_game import get_game_data_from_url, get_html
 
-BASE_URL = "https://www.gog.com/en/games?releaseStatuses=new-arrival&order=desc:releaseDate&hideDLCs=true&releaseDateRange=2024,2024&page="
+BASE_URL = "https://www.gog.com/en/games?releaseStatuses=new-arrival&order=desc:releaseDate&hideDLCs=true&releaseDateRange=2024,2024&page="  # pylint: disable=C0301
 
 
 def get_game_urls_from_page(page_html: str) -> list[str]:
@@ -25,7 +27,7 @@ def get_games_for_the_day(day: datetime = datetime.today(), page_number: int = 1
 
     html = get_html(url)
 
-    game_urls = get_game_urls_from_page(html)
+    game_urls = get_game_urls_from_page(html)[0:5]
 
     game_details = list(map(get_game_data_from_url, game_urls))
 
@@ -41,5 +43,5 @@ if __name__ == "__main__":
 
     start = perf_counter()
     games = get_games_for_the_day(day=datetime(2024, 10, 8))
-    print(games[0])
+    print([game["operating_systems"] for game in games])
     print(perf_counter() - start)

@@ -2,34 +2,66 @@
 
 from datetime import datetime
 from urllib.request import urlopen
-from bs4 import BeautifulSoup
+
+from bs4 import BeautifulSoup, Tag
 
 
 def get_html(url: str) -> str:
     """Return the html file of a given url."""
 
-    page = urlopen(url)
-    html_bytes = page.read()
-    html = html_bytes.decode("utf_8")
-    return html
+    with urlopen(url) as page:
+        html_bytes = page.read()
+        html = html_bytes.decode("utf_8")
+        return html
+
+
+def find_price(price_div: Tag) -> int:
+    """Given a div containing a game's price, finds said price."""
+
+    price_str = price_div.find("span", {"selenium-id":
+                                        "ProductFinalPrice"})
+    if price_str:
+        return int(float(price_str.text)*100)
+
+    price_str = price_div.find("span", {"class":
+                                        "product-actions-price__final-amount"}).text
+    if "FREE" in price_str:
+        return 0
+
+    raise ValueError("The price is somewhere else!")
 
 
 def format_os(os_string: str) -> str:
     """Turns the OS into the proper format."""
 
-    os_map = {
-        "windows": "Windows",
-        "mac": "Mac",
-        "linux": "Linux"
-    }
+    os_list = ["windows", "mac", "linux"]
 
     os_string_lower = os_string.lower()
     operating_systems = []
-    for key in os_map.keys():
-        if key in os_string_lower:
-            operating_systems.append(os_map[key])
+    for os in os_list:
+        if os in os_string_lower:
+            operating_systems.append(os.title())
 
     return operating_systems
+
+
+def extract_data_from_rows(rows: list[str], label_class: str, required_label: str,
+                           item_class: str = None, are_links: bool = False):
+    """Given a list of rows, written in the weird style of GOG's HTML,
+        return only the items we're looking for."""
+
+    for row in rows:
+        row_label = row.find(
+            "div", {"class": label_class}).text
+
+        if required_label in row_label.lower():
+            if not are_links:
+                return row.find("div", {"class": item_class}).text.strip()
+
+            links = row.find_all("a")
+            return [link.text for link in links]
+
+    return []
 
 
 def get_game_data_from_url(game_url: str) -> dict:
@@ -45,46 +77,35 @@ def get_game_data_from_url(game_url: str) -> dict:
 
     image_url = soup.find("img", {"class": "mobile-slider__image"}).get("src")
 
-    price_span = soup.find("span", {"selenium-id": "ProductFinalPrice"})
-
-    if price_span is not None:
-
-        price_str = price_span.text
-    else:
-        price_str = "0"
-
-    current_price = int(float(price_str)*100)
+    price_div = soup.find("div", {"selenium-id":
+                                  "ProductActionsBody"})
+    current_price = find_price(price_div)
 
     details_rows = soup.find_all("div", {"class": "table__row details__row"})
 
-    genres = []
-    tags = []
-    for row in details_rows:
-        row_label = row.find(
-            "div", {"class": "details__category table__row-label"}).text
+    genres = extract_data_from_rows(details_rows,
+                                    label_class="details__category table__row-label",
+                                    required_label="genre", are_links=True)
 
-        if row_label == "Genre:":
-            genre_links = row.find_all("a")
-            genres = [link.text for link in genre_links]
-
-        elif row_label == "Tags:":
-            tag_links = row.find_all("a")
-            tags = [link.text for link in tag_links]
+    tags = extract_data_from_rows(details_rows,
+                                  label_class="details__category table__row-label",
+                                  required_label="tag", are_links=True)
 
     rating_rows = soup.find_all(
         "div", {"class": "table__row details__rating details__row"})
 
-    for row in rating_rows:
-        row_label = row.find(
-            "div", {"class": "details__category table__row-label"}).text
-        if "Works on:" in row_label:
-            operating_systems = row.find(
-                "div", {"class": "details__content table__row-content"}).text.strip()
-            operating_systems = format_os(operating_systems)
+    operating_systems = extract_data_from_rows(rows=rating_rows,
+                                               label_class="details__category table__row-label",
+                                               required_label="works",
+                                               item_class="details__content table__row-content",
+                                               are_links=False)
+    release_date = extract_data_from_rows(rows=rating_rows,
+                                          label_class="details__category table__row-label",
+                                          required_label="release",
+                                          item_class="details__content table__row-content",
+                                          are_links=False)
 
-        elif "Release date:" in row_label:
-            release_date = row.find(
-                "div", {"class": "details__content table__row-content"}).text.strip()
+    operating_systems = format_os(operating_systems)
 
     release_date = datetime.strptime(release_date[3:13],
                                      "%Y-%m-%d")
