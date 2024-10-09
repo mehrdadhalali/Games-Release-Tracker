@@ -112,7 +112,7 @@ def scrape_game_tags(app_soup: bs4.BeautifulSoup) -> list[str]:
     """Scrapes a game's Steam app page for tags."""
     tag_elements = app_soup.find_all('a', class_='app_tag')
     tags = [tag.text.strip() for tag in tag_elements]
-    return tags if tags else ["No tags available."]
+    return tags if tags else []
 
 
 def scrape_game_genres(app_soup: bs4.BeautifulSoup) -> list[str]:
