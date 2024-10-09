@@ -40,8 +40,8 @@ PRIMARY KEY (game_id)
 
 CREATE TABLE game_genre_assignment (
     assignment_id INT GENERATED ALWAYS AS IDENTITY,
-    game_id INT NOT NULL UNIQUE ,
-    genre_id SMALLINT NOT NULL UNIQUE,
+    game_id INT NOT NULL  ,
+    genre_id SMALLINT NOT NULL ,
 PRIMARY KEY (assignment_id),
 FOREIGN KEY (game_id) REFERENCES game(game_id),
 FOREIGN KEY (genre_id) REFERENCES genre(genre_id)
@@ -49,8 +49,8 @@ FOREIGN KEY (genre_id) REFERENCES genre(genre_id)
 
 CREATE TABLE game_os_assignment (
     assignment_id INT GENERATED ALWAYS AS IDENTITY,
-    game_id INT NOT NULL UNIQUE ,
-    os_id SMALLINT NOT NULL UNIQUE,
+    game_id INT NOT NULL  ,
+    os_id SMALLINT NOT NULL ,
 PRIMARY KEY (assignment_id),
 FOREIGN KEY (game_id) REFERENCES game(game_id),
 FOREIGN KEY (os_id) REFERENCES operating_system(os_id)
