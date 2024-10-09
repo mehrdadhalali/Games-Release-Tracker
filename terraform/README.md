@@ -31,4 +31,4 @@ After use, destroy with `terraform destroy`.
 
 This image shows the architecture diagram for this project.
 
-<img src="../architecture_diagram.png" alt="Data Visualisation" width="600"/>
+<img src="../architecture_diagram.png" alt="Architecture Diagram" width="600"/>
