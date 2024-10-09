@@ -6,6 +6,7 @@ import requests as req
 import bs4
 
 STEAM_NEW_RELEASE_URL = "https://store.steampowered.com/search/?sort_by=Released_DESC&category1=998"
+STEAM_DB_URL = "https://steamdb.info/app/"
 TIMEOUT = 10
 
 
@@ -67,20 +68,58 @@ def parse_price(game_listing: bs4.Tag) -> str:
     return format_price(price)
 
 
+def get_steam_db_url(app_id: str) -> str:
+    """Formats the base steam DB url for a particular app."""
+    return f"{STEAM_DB_URL}{app_id}/info/"
+
+
+def scrape_game_description(game_url: str) -> str:
+    """Scrapes a game's SteamDB info page for description information."""
+    pass
+
+
+def scrape_game_tags(game_url: str) -> list[str]:
+    """Scrapes a game's SteamDB info page for tags."""
+    pass
+
+
+def scrape_game_genres(game_url: str) -> list[str]:
+    """Scrapes a game's SteamDB info page for genres."""
+    pass
+
+
+def scrape_game_operating_systems(game_url: str) -> list[str]:
+    """Scrapes a game's SteamDB info page for supported operating systems."""
+    pass
+
+
 def parse_game_listing(game_listing: bs4.Tag) -> dict:
     """Parses game information from a game listing div."""
+    app_id = parse_app_id(game_listing)
+    steam_db = get_steam_db_url(app_id)
+    description = scrape_game_description(steam_db)
+    os = scrape_game_operating_systems(steam_db)
+    genres = scrape_game_genres(steam_db)
+    tags = scrape_game_tags(steam_db)
+
     return {
-        'app_id': parse_app_id(game_listing),
+        'title': parse_title(game_listing),
+        'description': description,
+        'release_date': parse_release_date(game_listing),
+        'operating_systems': os,
+        'genres': genres,
+        'tags': tags,
+        'current_price': parse_price(game_listing),
         'url': parse_game_url(game_listing),
         'img_url': parse_image_url(game_listing),
-        'title': parse_title(game_listing),
-        'release_date': parse_release_date(game_listing),
-        'price': parse_price(game_listing)
     }
 
 
 if __name__ == "__main__":
     source = load_page_source(STEAM_NEW_RELEASE_URL)
     listings = get_page_listings(source)
-    for listing in listings:
-        print(parse_game_listing(listing))
+
+    listings = {
+        'platform': 'steam',
+        'listings': [parse_game_listing(listing) for listing in listings]
+    }
