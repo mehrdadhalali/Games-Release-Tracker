@@ -1,6 +1,7 @@
 """Script to scrape the latest games from GOG."""
 
 from datetime import datetime
+from json import dumps
 
 from bs4 import BeautifulSoup
 
@@ -35,7 +36,7 @@ def get_games_for_the_day(day: datetime = datetime.today(), page_number: int = 1
         if game_details["release_date"] == day:
             game_details_list.append(game_details)
 
-    return {
+    return dumps({
         "platform": "gog",
         "listings": game_details_list
-    }
+    })
