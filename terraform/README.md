@@ -2,7 +2,7 @@
 
 ## Overview
 
-This terraform folder creates all the required AWS services for this project. This includes the AWS postgres RDS ...
+This terraform folder creates all the required AWS services for this project bar the ECR's containing the images. This includes the AWS postgres RDS ...
 
 ## Set-up and Running
 
@@ -18,6 +18,8 @@ DB_PORT="XXXX"
 SUBNET_NAME="XXXX"
 VPC_ID="XXXX"
 ```
+
+Before running this terraform script, you need to go into the [web_scraping](../web_scraping), [report](../report),[load_to_rds](../load_to_rds) and [dashboard](../dashboard) folders and follow the instructions for `Deploying to the Cloud`, which involves making the ECRs containing the Docker images. Once the ECR's have been created then the terraform can be run.
 
 Set up folder with `terraform init`.
 

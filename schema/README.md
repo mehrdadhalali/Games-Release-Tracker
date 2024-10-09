@@ -12,7 +12,7 @@ This directory contains the schema SQL and two bash scripts to connect to and re
 
 ## Set-up and Usage
 
-1. Ensure you have an `.env` file inside the [schema directory](../schema).
+1. Ensure you have an `.env` file inside the [schema directory](/schema).
 2. Inside the `.env`, make sure you have the following:
 
 ```
