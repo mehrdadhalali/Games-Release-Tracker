@@ -52,8 +52,3 @@ def get_listings_for_the_day(day: datetime.date, conn: connection) -> list[str]:
         rows = curs.fetchall()
         return [row["listing_url"]
                 for row in rows]
-
-
-if __name__ == "__main__":
-
-    ...
