@@ -154,7 +154,7 @@ def parse_game_listing(game_listing: bs4.Tag) -> dict:
     return {
         'title': parse_title(game_listing),
         'description': scrape_game_description(app_soup),
-        'release_date': datetime.strftime(parse_release_date(game_listing), '%d %b %Y'),
+        'release_date': datetime.strftime(parse_release_date(game_listing), '%d/%m/%Y'),
         'operating_systems': scrape_game_operating_systems(app_soup),
         'genres': scrape_game_genres(app_soup),
         'tags': scrape_game_tags(app_soup),
