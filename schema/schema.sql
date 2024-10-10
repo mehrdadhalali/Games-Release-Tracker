@@ -61,7 +61,6 @@ CREATE TABLE game_listing (
     game_id INT NOT NULL UNIQUE ,
     platform_id SMALLINT NOT NULL UNIQUE,
     release_price INT NOT NULL , 
-    listing_date TIMESTAMPTZ NOT NULL, 
     listing_url TEXT NOT NULL UNIQUE , 
 PRIMARY KEY (listing_id),
 FOREIGN KEY (game_id) REFERENCES game(game_id),
