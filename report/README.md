@@ -1,11 +1,11 @@
-# Report Generator
+# 📊 Report Generator
 A script to generate weekly summary reports of the games data collected.
 
-## Features:
+## ✨ Features:
 - Generates PDF files summarising key metrics for the past week.
 - Emails subscribers with PDF report attachments.
 
-## Setup:
+## ⚙️ Setup:
 
 - Please ensure that a `.env` file exists in this directory with the following values:
 ```bash
@@ -19,14 +19,14 @@ FROM_EMAIL=XXXXXX
 ECR_REPO_NAME=XXXXXX
 AWS_REGION_NAME=XXXXXX
 AWS_ACCOUNT_ID=XXXXXX
-AWS_ACCESS_KEY=XXXXXX
-AWS_SECRET_KEY=XXXXXX
+MY_AWS_ACCESS_KEY=XXXXXX
+MY_AWS_SECRET_KEY=XXXXXX
 ```
 
-- Please run `bash push-to-ecr.sh`
+- Run `bash push-to-ecr.sh`
 
 
-## Files Explained
+## 📁 Files Explained
 - `Dockerfile`: Contains instructions to build the Docker image
 - `email_report.py`: Handles email functionality for sending reports.
 - `generate_report.py`: Generates the PDF report for summarising the game data.
