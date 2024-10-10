@@ -10,7 +10,7 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 
-from sl_queries import get_game_data, get_weekdays_data, get_daily_game_count
+from sl_queries import get_game_data, get_weekdays_data, get_daily_game_count, get_daily_releases
 
 # Page configuration
 st.set_page_config(layout="wide")
@@ -139,6 +139,35 @@ def create_os_bar_chart(os_selection, start_date, end_date):
     return os_bar_chart
 
 
+def create_release_line_chart(show_nsfw, start_date, end_date):
+    """Line chart for platform releases over time."""
+    daily_data = get_daily_releases(show_nsfw, start_date, end_date)
+
+    # Check if start and end date are the same
+    if start_date == end_date:
+        return None  # Do not display the chart if the dates are the same
+
+    # Count the number of releases per day per platform
+    daily_counts = daily_data.groupby(
+        ['release_date', 'platform_name']).size().reset_index(name='release_count')
+
+    # Create the line chart
+    line_chart = alt.Chart(daily_counts).mark_line(point=True).encode(
+        x=alt.X('release_date:T', title='Release Date'),
+        y=alt.Y('release_count:Q', title='Number of Releases'),
+        color=alt.Color('platform_name:N', scale=alt.Scale(
+            domain=['Epic', 'GOG', 'Steam'], range=[COLOURS[1], COLOURS[4], COLOURS[3]])),
+        tooltip=['release_date:T', 'release_count:Q', 'platform_name:N']
+    ).properties(
+        title='Daily Game Releases by Platform',
+        width=800,
+        height=400
+    )
+
+    return line_chart
+
+
+
 if __name__ == "__main__":
     # User input for OS selection, date range, and NSFW checkbox
     cols = st.columns([2, 0.75, 1, 0.35])
@@ -175,6 +204,8 @@ if __name__ == "__main__":
     with cols[1]:
         st.altair_chart(create_os_bar_chart(
             os_selection, start_date, end_date), use_container_width=True)
+        
+    st.altair_chart(create_release_line_chart(show_nsfw, start_date, end_date))
 
 
     # All time stats
