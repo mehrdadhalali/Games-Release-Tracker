@@ -35,7 +35,7 @@ def get_ids(table_name: str, conn: connection, column_prefix: str = None) -> dic
                     {column_prefix}_id FROM {table_name};""")
         rows = curs.fetchall()
 
-    name_to_id = {row[f"{column_prefix}_name"]: row[f"{column_prefix}_id"]
+    name_to_id = {row[f"{column_prefix}_name"].lower(): row[f"{column_prefix}_id"]
                   for row in rows}
 
     return name_to_id

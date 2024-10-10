@@ -1,7 +1,12 @@
 # pylint: skip-file
 
-from os import path
+from upload_to_db import remove_duplicates
 
 
-def test_placeholder():
-    assert path.exists('README.md')
+def test_remove_duplicates():
+
+    scraped_games = [
+        {
+            "platform": "Steam"
+        }
+    ]

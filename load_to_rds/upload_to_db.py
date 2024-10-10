@@ -10,6 +10,16 @@ from get_data_from_database import get_connection, get_ids, get_listings_for_the
 from transform_game_data import transform_to_tuples
 
 
+def remove_duplicates(listings_list: list[dict], already_scraped: list[str]) -> list[dict]:
+    """Removes any game that is already scraped."""
+
+    for listings in listings_list:
+        listings["listings"] = [game for game in listings["listings"]
+                                if game["url"] not in already_scraped]
+
+    return listings_list
+
+
 def update_genres(new_genres: list[str], conn: connection) -> dict:
     """Adds any new genres to the genre table, returning their id map."""
 
@@ -42,7 +52,7 @@ def upload_listing(game: dict, game_id: int, platform: str,
                    platform_to_id: dict, conn: connection) -> None:
     """Uploads the listing details to the listing table."""
 
-    platform_id = platform_to_id[platform]
+    platform_id = platform_to_id[platform.lower()]
 
     with conn.cursor() as curs:
         curs.execute("""INSERT INTO game_listing
@@ -57,13 +67,13 @@ def upload_genre(game_id: int, genres: list[str],
     """Updates the genre assignment table in the database."""
 
     new_genres = [(genre, ) for genre in genres
-                  if genre not in genre_to_id.keys()]
+                  if genre.lower() not in genre_to_id.keys()]
     if len(new_genres) > 0:
 
         new_genre_map = update_genres(new_genres, conn)
         genre_to_id.update(new_genre_map)
 
-    upload_tuples = [(game_id, genre_to_id[genre])
+    upload_tuples = [(game_id, genre_to_id[genre.lower()])
                      for genre in genres]
     query = """INSERT INTO game_genre_assignment
                 (game_id, genre_id)
@@ -78,9 +88,7 @@ def upload_os(game_id: int, oss: list[str],
               os_to_id: dict, conn: connection) -> None:
     """Updates the OS assignment table in the database."""
 
-    os_to_id = get_ids("operating_system", "os")
-
-    upload_tuples = [(game_id, os_to_id[os])
+    upload_tuples = [(game_id, os_to_id[os.lower()])
                      for os in oss]
     query = """INSERT INTO game_os_assignment
                 (game_id, os_id)
@@ -113,8 +121,9 @@ def upload_all_listings_to_database(json_data: dict, maps: list[dict], conn: con
         upload_entire_listing_to_database(listing, platform, maps, conn)
 
 
-def main():
-    """The main function"""
+def load_to_db():
+    """The main function
+        Uploads all of the gathered data to the database."""
 
     conn = get_connection()
     maps = {
@@ -129,24 +138,17 @@ def main():
     with open("steam_data.json", "r", encoding="UTF-8") as f:
         steam_data = load(f)
 
-    for listing in steam_data["listings"]:
-        listing["release_date"] = datetime.strftime(
-            datetime.strptime(listing["release_date"], "%d %b %Y"),
-            "%d/%m/%Y"
-        )
+    all_scraped_data = [steam_data, gog_data]
 
     already_scraped = get_listings_for_the_day(datetime.today(), conn)
-    gog_data["listings"] = [game for game in gog_data["listings"]
-                            if game["url"] not in already_scraped]
-    steam_data["listings"] = [game for game in steam_data["listings"]
-                              if game["url"] not in already_scraped]
+    all_scraped_data = remove_duplicates(all_scraped_data, already_scraped)
 
-    upload_all_listings_to_database(gog_data, maps, conn)
-    upload_all_listings_to_database(steam_data, maps, conn)
+    for dataset in all_scraped_data:
+        upload_all_listings_to_database(dataset, maps, conn)
 
     conn.close()
 
 
 if __name__ == "__main__":
 
-    main()
+    load_to_db()
