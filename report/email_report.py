@@ -50,8 +50,8 @@ def generate_and_send_report(total_games: int, total_platforms: int, genre_data:
     summary_report = generate_summary_report_pdf(
         total_games, total_platforms, genre_data,
         platform_price, platform_releases, free_games)
-    mail_client = client('ses', region_name=ENV['AWS_REGION_NAME'], aws_access_key_id=ENV['AWS_ACCESS_KEY'],
-                         aws_secret_access_key=ENV['AWS_SECRET_KEY'],)
+    mail_client = client('ses', region_name=ENV['AWS_REGION_NAME'], aws_access_key_id=ENV['MY_AWS_ACCESS_KEY'],
+                         aws_secret_access_key=ENV['MY_AWS_SECRET_KEY'],)
     sub_info = get_subscriber_info()
     for subscriber in sub_info:
         name = get_subscriber_first_name(subscriber)
