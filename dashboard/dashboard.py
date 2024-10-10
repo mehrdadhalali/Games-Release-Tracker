@@ -8,8 +8,13 @@ which is stored in an AWS RDS database.
 from datetime import datetime
 
 import streamlit as st
+import nltk
 
-from functions import create_donut_chart, create_genre_bar_chart, create_line_chart, create_os_bar_chart, create_platform_bar_chart, create_release_line_chart, display_game_table
+from functions import create_donut_chart, create_genre_bar_chart, create_line_chart, create_os_bar_chart, create_platform_bar_chart, create_release_line_chart, display_game_table, create_word_cloud, preprocess_descriptions
+from sl_queries import get_game_descriptions
+
+# Download the 'punkt' tokenizer model
+nltk.download('punkt_tab')
 
 # Page configuration
 st.set_page_config(layout="wide")
@@ -70,7 +75,11 @@ if __name__ == "__main__":
         with cols[1]:
             st.altair_chart(create_genre_bar_chart(show_nsfw, start_date, end_date),
                             use_container_width=True)
-
+    else:
+        cols = st.columns([0.5, 1, 0.5])
+        with cols[1]:
+            st.altair_chart(create_genre_bar_chart(show_nsfw, start_date, end_date),
+                            use_container_width=True)
 
     # All time stats
     st.subheader("All Time Stats")
@@ -84,10 +93,14 @@ if __name__ == "__main__":
     with cols[1]:
         st.altair_chart(create_line_chart(), use_container_width=True)
 
-    st.subheader("List of Games")
+    st.subheader("Top Keywords in Game Descriptions")
     st.markdown(
         "<style>.line { border: 0.5px solid; margin: 0; }</style><div class='line'></div>",
         unsafe_allow_html=True)
-
-    # Game releases table
-    display_game_table(show_nsfw, os_selection, start_date, end_date)
+    
+    descriptions = get_game_descriptions(
+            show_nsfw, start_date, end_date, os_selection)
+    word_counts = preprocess_descriptions(descriptions)
+    word_cloud_fig = create_word_cloud(word_counts)
+    st.pyplot(word_cloud_fig, use_container_width=True)
+    

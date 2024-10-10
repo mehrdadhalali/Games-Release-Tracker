@@ -1,8 +1,16 @@
 """This script includes functions used in the dashboard."""
 
+import re
+from collections import Counter
+import numpy as np
+
 import streamlit as st
 import pandas as pd
 import altair as alt
+from nltk.corpus import stopwords as nltk_stopwords
+from nltk.tokenize import word_tokenize
+from wordcloud import WordCloud
+import matplotlib.pyplot as plt
 
 from sl_queries import get_game_data, get_weekdays_data, get_daily_game_count, get_daily_releases, get_genre_data
 
@@ -34,7 +42,7 @@ def create_donut_chart():
         ]
     ).properties(
         title=alt.TitleParams(
-            text='Game Releases by Day of the Week',
+            text='Distribution of Game Releases by Weekday',
             anchor='middle',
             fontSize=17
         )
@@ -55,7 +63,7 @@ def create_line_chart():
         tooltip=['release_date:T', 'total_games:Q']
     ).properties(
         title=alt.TitleParams(
-            text='Daily Distinct Game Releases',
+            text='Daily Count of Unique Game Releases',
             anchor='middle',
             fontSize=17
         )
@@ -64,9 +72,9 @@ def create_line_chart():
     return line_chart
 
 
-def display_game_table(show_nsfw, os_selection, start_date, end_date):
+def display_game_table(show_nsfw, os_selection, start_date, end_date, search_query):
     table_data = get_game_data(
-        show_nsfw, start_date, end_date, os_selection)
+        show_nsfw, start_date, end_date, os_selection, search_query)
 
     table_data.drop('os_name', axis=1, inplace=True)
     # Rename columns to make them more readable
@@ -83,6 +91,7 @@ def display_game_table(show_nsfw, os_selection, start_date, end_date):
 
     # Convert price from pennies to pounds and format it
     table_data['Price'] = table_data['Price'].apply(lambda x: f"£{x:.2f}")
+    table_data['Price'] = table_data['Price'].replace("£0.00", "Free")
 
     st.dataframe(
         table_data,
@@ -109,7 +118,7 @@ def create_platform_bar_chart(os_selection, start_date, end_date, show_nsfw):
         tooltip=['Platform:N', 'Game Count:Q']
     ).properties(
         title=alt.TitleParams(
-            text='Number of Games Released by Platform',
+            text='Game Releases per Platform',
             anchor='middle',
             fontSize=17
         )
@@ -137,7 +146,7 @@ def create_os_bar_chart(os_selection, start_date, end_date):
         tooltip=['Operating System:N', 'Game Count:Q']
     ).properties(
         title=alt.TitleParams(
-            text='Number of Games Released by Operating System',
+            text='Game Releases by Operating System',
             anchor='middle',
             fontSize=17
         )
@@ -168,7 +177,7 @@ def create_release_line_chart(show_nsfw, start_date, end_date):
         tooltip=['release_date:T', 'release_count:Q', 'platform_name:N']
     ).properties(
         title=alt.TitleParams(
-            text='Daily Game Releases by Platform',
+            text='Daily Game Releases Across Platforms',
             anchor='middle',
             fontSize=17
         )
@@ -188,10 +197,52 @@ def create_genre_bar_chart(show_nsfw, start_date, end_date):
         tooltip=['genre_name:N', 'game_count:Q']
     ).properties(
         title=alt.TitleParams(
-            text='Genre Popularity Among Game Releases',
+            text='Most Popular Game Genres',
             anchor='middle',
             fontSize=17
         )
     )
 
     return genre_bar_graph
+
+
+def preprocess_descriptions(descriptions):
+    """
+    Preprocess game descriptions: lowercasing, removing punctuation, filtering stopwords.
+    """
+    stop_words = set(nltk_stopwords.words('english'))
+
+    cleaned_words = []
+    for desc in descriptions:
+        # Remove punctuation and tokenize words
+        words = word_tokenize(re.sub(r'[^\w\s]', '', desc.lower()))
+        # Filter out stop words and words shorter than 3 characters
+        words = [
+            word for word in words if word != "game" and word not in stop_words and len(word) > 2]
+        cleaned_words.extend(words)
+
+    word_counts = Counter(cleaned_words)
+
+    return dict(word_counts)
+
+
+def create_word_cloud(word_counts):
+    """
+    Create a word cloud from the provided word counts.
+    """
+    word_cloud = WordCloud(
+        width=1000,
+        height=400,
+        background_color="#1e1e1e",
+        colormap="Purples",
+        max_words=40,
+        margin=0
+    ).generate_from_frequencies(dict(word_counts))
+
+    # Plot the word cloud
+    fig, ax = plt.subplots()
+    ax.imshow(word_cloud, interpolation='bilinear')
+    ax.axis('off')
+    plt.tight_layout(pad=0)
+
+    return fig

@@ -3,8 +3,8 @@ This script includes dashboard functions and queries to the database.
 """
 
 from os import environ as ENV
-from datetime import datetime
 
+import streamlit as st
 from psycopg2 import connect
 import altair as alt
 import pandas as pd
@@ -21,11 +21,12 @@ def get_connection():
                    database=ENV["DB_NAME"])
 
 
-def get_game_data(show_nsfw, start_date, end_date, os_selection):
+@st.cache_data
+def get_game_data(show_nsfw, start_date, end_date, os_selection, search_query=""):
     '''
     Retrieves game information for the dashboard table including
     name, genres, release date, platform, price, and listing URL.
-    Filters by platform, date range, and operating system if provided.
+    Filters by date range, and operating system if provided.
     '''
     query = """
     SELECT
@@ -58,6 +59,12 @@ def get_game_data(show_nsfw, start_date, end_date, os_selection):
         query += " AND os.os_name = %s"
         params.append(os_selection)
 
+    # Add search term filter if provided
+    if search_query:
+        query += " AND (g.game_title ILIKE %s OR ge.genre_name ILIKE %s)"
+        search_param = f"%{search_query}%"
+        params.extend([search_param, search_param])
+
     query += """
     GROUP BY g.game_title, g.release_date, p.platform_name, gl.release_price, gl.listing_url, os_name
     ORDER BY g.release_date DESC;
@@ -82,6 +89,7 @@ def get_game_data(show_nsfw, start_date, end_date, os_selection):
     return df
 
 
+@st.cache_data
 def get_daily_releases(show_nsfw, start_date, end_date):
     """
     Retrieves the number of games released on each platform between the chosen dates.
@@ -112,8 +120,7 @@ def get_daily_releases(show_nsfw, start_date, end_date):
     return df
 
 
-# All time stats
-
+@st.cache_data
 def get_weekdays_data():
     '''Retrieves release dates from the database'''
     query = "SELECT release_date FROM game;"
@@ -131,6 +138,7 @@ def get_weekdays_data():
     return df
 
 
+@st.cache_data
 def get_daily_game_count():
     '''Retrieves the count of distinct game titles for each release date.'''
     query = """
@@ -155,6 +163,7 @@ def get_daily_game_count():
     return df
 
 
+@st.cache_data
 def get_genre_data(show_nsfw, start_date, end_date):
     """
     Retrieves information about the most frequent genres for releases.
@@ -184,3 +193,37 @@ def get_genre_data(show_nsfw, start_date, end_date):
     conn.close()
 
     return df
+
+
+@st.cache_data
+def get_game_descriptions(show_nsfw, start_date, end_date, os_selection):
+    """
+    Retrieves game descriptions based on NSFW, date range, and operating system selection.
+    """
+    query = """
+    SELECT g.game_description
+    FROM game g
+    LEFT JOIN game_listing gl ON g.game_id = gl.game_id
+    LEFT JOIN game_os_assignment goa ON g.game_id = goa.game_id
+    LEFT JOIN operating_system os ON goa.os_id = os.os_id
+    WHERE (%s OR g.is_nsfw = FALSE)
+    AND g.release_date BETWEEN %s AND %s
+    """
+
+    params = [show_nsfw, start_date, end_date]
+
+    if os_selection != "-All-":
+        query += " AND os.os_name = %s"
+        params.append(os_selection)
+
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(query, params)
+    result = cursor.fetchall()
+
+    descriptions = [row[0] for row in result]
+
+    cursor.close()
+    conn.close()
+
+    return descriptions
