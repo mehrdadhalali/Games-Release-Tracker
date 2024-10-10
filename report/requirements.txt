@@ -1,6 +1,6 @@
 boto3
 psycopg2
-dotenv
+python-dotenv
 pandas
 pytest
 pylint
