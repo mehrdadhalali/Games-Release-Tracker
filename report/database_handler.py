@@ -67,8 +67,9 @@ def get_platform_listing_count() -> dict:
     """Returns a dictionary mapping each platform to the number of new listings."""
     select_str = """SELECT p.platform_name, COUNT(gl.game_id) AS total_listings
     FROM game_listing AS gl
+    JOIN game AS g ON(g.game_id = gl.game_id)
     JOIN platform AS p ON gl.platform_id = p.platform_id
-    WHERE gl.listing_date > CURRENT_TIMESTAMP - INTERVAL '7 days'
+    WHERE g.release_date > CURRENT_TIMESTAMP - INTERVAL '7 days'
     GROUP BY p.platform_name;"""
     with get_connection() as conn:
         with get_cursor(conn) as cur:
@@ -77,15 +78,22 @@ def get_platform_listing_count() -> dict:
     return {x['platform_name']: x['total_listings'] for x in results}
 
 
+def format_price(price: int) -> str:
+    """Formats a price in pennies as a pounds string."""
+    pounds = price / 100
+    return f"£{pounds:.2f}"
+
+
 def get_platform_average_price() -> dict:
     """Returns a dictionary mapping each platform to its average listing price
     over the past week."""
 
     select_str = """
     SELECT p.platform_name, AVG(gl.release_price) AS average_price
-    FROM game_listing AS gl
+    FROM game_listing AS gl 
+    JOIN game AS g ON(g.game_id = gl.game_id)
     JOIN platform AS p ON gl.platform_id = p.platform_id
-    WHERE gl.listing_date > CURRENT_TIMESTAMP - INTERVAL '7 days'
+    WHERE g.release_date > CURRENT_TIMESTAMP - INTERVAL '7 days'
     GROUP BY p.platform_name;
     """
 
@@ -94,7 +102,7 @@ def get_platform_average_price() -> dict:
             cur.execute(select_str)
             results = cur.fetchall()
 
-    return {x['platform_name']: x['average_price'] for x in results}
+    return {x['platform_name']: format_price(x['average_price']) for x in results}
 
 
 def get_free_to_play() -> list[dict]:
@@ -104,7 +112,7 @@ def get_free_to_play() -> list[dict]:
     AS g JOIN game_listing AS gl ON(g.game_id = gl.game_id)
     JOIN platform as p ON(p.platform_id = gl.platform_id)
     WHERE gl.release_price = 0 AND
-    gl.listing_date > CURRENT_TIMESTAMP - INTERVAL '7 days';"""
+    g.release_date > CURRENT_TIMESTAMP - INTERVAL '7 days';"""
     with get_connection() as conn:
         with get_cursor(conn) as cur:
             cur.execute(select_str)
