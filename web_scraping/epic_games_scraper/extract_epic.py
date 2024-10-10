@@ -62,3 +62,26 @@ def get_game_url(mappings: list[dict]) -> str:
     """Returns the game's URL from a list of mappings."""
     page_slug = mappings[0].get('pageSlug')
     return f"https://store.epicgames.com/en-US/p/{page_slug}"
+
+
+def get_listing_image(image_list: list[dict]) -> str:
+    """Returns the thumbnail image URL for a listing."""
+    for img in image_list:
+        if img['type'] == "Thumbnail":
+            return img['url']
+    return ""
+
+
+def parse_listing(listing: dict) -> dict:
+    """Parses a game listing, returns a formatted dictionary describing the game object."""
+    return {
+        "title": listing["title"],
+        "description": listing["description"],
+        "release_date": format_release_date(listing["releaseDate"]),
+        "operating_systems": get_operating_systems(listing['tags']),
+        "genres": get_genres(listing['tags']),
+        "tags": get_features(listing['tags']),
+        "current_price": listing["currentPrice"],
+        "url": get_game_url(listing['mappings']),
+        "img_url": get_listing_image(listing['keyImages'])
+    }
