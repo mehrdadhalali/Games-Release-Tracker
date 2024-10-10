@@ -26,3 +26,10 @@ DB_NAME=XXXXX
 
 
 ## 📄 Files Explained
+
+- `get_data_from_database.py`: To upload the data, we need to know some things about the already existing data, like IDs and duplicates. This script is for querying that data.
+- `transform_game_data.py`: This is a short script that transforms the data received by the scrapers.
+- `upload_to_db.py`: This script uploads all of the gathered data to the database.
+- `test_load_to_rds`: Testing code.
+- `delete.sql`: An SQL script to delete all game data (NOT metadata), executed by `clear_database.sh`
+- `connect.sh`: Connects to the database. 

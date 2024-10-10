@@ -41,7 +41,7 @@ def get_ids(table_name: str, conn: connection, column_prefix: str = None) -> dic
     return name_to_id
 
 
-def get_listings_for_the_day(day: datetime.date, conn: connection) -> list[str]:
+def get_listings_for_the_day(day: datetime, conn: connection) -> list[str]:
     """Returns a list of listings already scraped that day."""
 
     with conn.cursor() as curs:

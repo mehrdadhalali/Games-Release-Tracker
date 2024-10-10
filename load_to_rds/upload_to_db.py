@@ -10,6 +10,13 @@ from get_data_from_database import get_connection, get_ids, get_listings_for_the
 from transform_game_data import transform_to_tuples
 
 
+def get_today() -> datetime:
+    """Gets the beginning of today as a datetime."""
+
+    now = datetime.now()
+    return datetime(now.year, now.month, now.day)
+
+
 def remove_duplicates(listings_list: list[dict], already_scraped: list[str]) -> list[dict]:
     """Removes any game that is already scraped."""
 
@@ -22,7 +29,7 @@ def remove_duplicates(listings_list: list[dict], already_scraped: list[str]) -> 
 
 def update_genres(new_genres: list[str], conn: connection) -> dict:
     """Adds any new genres to the genre table, returning their id map."""
-
+    print(new_genres)
     query = "INSERT INTO genre (genre_name) VALUES %s RETURNING genre_id, genre_name;"
 
     with conn.cursor() as curs:
@@ -120,6 +127,9 @@ def upload_all_listings_to_database(json_data: dict, maps: list[dict], conn: con
     for listing in json_data["listings"]:
         upload_entire_listing_to_database(listing, platform, maps, conn)
 
+    print(f"Inserted {len(json_data["listings"])
+                      } listings from {platform}.")
+
 
 def load_to_db():
     """The main function
@@ -140,7 +150,8 @@ def load_to_db():
 
     all_scraped_data = [steam_data, gog_data]
 
-    already_scraped = get_listings_for_the_day(datetime.today(), conn)
+    already_scraped = get_listings_for_the_day(get_today(), conn)
+
     all_scraped_data = remove_duplicates(all_scraped_data, already_scraped)
 
     for dataset in all_scraped_data:
