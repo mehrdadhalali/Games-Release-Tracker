@@ -154,3 +154,33 @@ def get_daily_game_count():
     conn.close()
     return df
 
+
+def get_genre_data(show_nsfw, start_date, end_date):
+    """
+    Retrieves information about the most frequent genres for releases.
+    """
+    query = """
+    SELECT 
+        STRING_AGG(DISTINCT ge.genre_name, ', ') AS genre_name,
+        COUNT(g.game_id) AS game_count
+    FROM game g
+    LEFT JOIN game_genre_assignment ga ON g.game_id = ga.game_id
+    LEFT JOIN genre ge ON ga.genre_id = ge.genre_id
+    WHERE (%s OR g.is_nsfw = FALSE)
+    AND g.release_date BETWEEN %s AND %s
+    GROUP BY ge.genre_name LIMIT 10;
+    """
+
+    params = [show_nsfw, start_date, end_date]
+
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(query, params)
+    result = cursor.fetchall()
+
+    df = pd.DataFrame(result, columns=['genre_name', 'game_count'])
+
+    cursor.close()
+    conn.close()
+
+    return df

@@ -10,16 +10,24 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 
-from sl_queries import get_game_data, get_weekdays_data, get_daily_game_count, get_daily_releases
+from sl_queries import get_game_data, get_weekdays_data, get_daily_game_count, get_daily_releases, get_genre_data
 
 # Page configuration
 st.set_page_config(layout="wide")
 COLOURS = ['#6a0dad', '#A26ED5', '#3b5998',
            '#5780d9', '#a80dad', '#e426eb', '#0539f7']
+st.markdown(
+    """
+    <style>
+    a {
+        color: #A26ED5 !important;  /* Override the link color */
+    }
+    </style>
+    """,
+    unsafe_allow_html=True)  # Change hyperlink colour
+
 
 # Function to create the donut chart
-
-
 def create_donut_chart():
     release_data = get_weekdays_data()
     release_data['release_date'] = pd.to_datetime(
@@ -27,7 +35,7 @@ def create_donut_chart():
     release_data['day_of_week'] = release_data['release_date'].dt.day_name()
 
     day_counts = release_data['day_of_week'].value_counts().reset_index()
-    day_counts.columns = ['Day of Week', 'Count']
+    day_counts.columns = ['Weekday', 'Count']
 
     total_counts = day_counts['Count'].sum()
     day_counts['Percentage'] = (
@@ -35,10 +43,10 @@ def create_donut_chart():
 
     donut_chart = alt.Chart(day_counts).mark_arc(innerRadius=50).encode(
         theta=alt.Theta(field='Percentage', type='quantitative'),
-        color=alt.Color(field='Day of Week', type='nominal', scale=alt.Scale(
-            domain=day_counts['Day of Week'].tolist(), range=COLOURS)),
+        color=alt.Color(field='Weekday', type='nominal', scale=alt.Scale(
+            domain=day_counts['Weekday'].tolist(), range=COLOURS)),
         tooltip=[
-            'Day of Week',
+            'Weekday',
             alt.Tooltip('Percentage:Q', format=".2f")
         ]
     ).properties(
@@ -54,7 +62,7 @@ def create_line_chart():
     daily_game_data['release_date'] = pd.to_datetime(
         daily_game_data['release_date'])
 
-    line_chart = alt.Chart(daily_game_data).mark_line(point=True).encode(
+    line_chart = alt.Chart(daily_game_data).mark_line(color=COLOURS[0], point=True).encode(
         x=alt.X('release_date:T', title='Release Date',
                 axis=alt.Axis(format='%Y-%m-%d')),
         y=alt.Y('total_games:Q', title='Total Games'),
@@ -127,7 +135,7 @@ def create_os_bar_chart(os_selection, start_date, end_date):
     os_counts.columns = ['Operating System', 'Game Count']
 
     # Create the bar chart
-    os_bar_chart = alt.Chart(os_counts).mark_bar(color=COLOURS[2]).encode(
+    os_bar_chart = alt.Chart(os_counts).mark_bar(color=COLOURS[0]).encode(
         x=alt.X('Operating System:N', title='Operating System',
                 axis=alt.Axis(labelAngle=0)),
         y=alt.Y('Game Count:Q', title='Number of Games'),
@@ -156,15 +164,29 @@ def create_release_line_chart(show_nsfw, start_date, end_date):
         x=alt.X('release_date:T', title='Release Date'),
         y=alt.Y('release_count:Q', title='Number of Releases'),
         color=alt.Color('platform_name:N', scale=alt.Scale(
-            domain=['Epic', 'GOG', 'Steam'], range=[COLOURS[1], COLOURS[4], COLOURS[3]])),
+            domain=['Epic', 'GOG', 'Steam'], range=[COLOURS[1], COLOURS[4], COLOURS[3]]),
+            title='Platform'),
         tooltip=['release_date:T', 'release_count:Q', 'platform_name:N']
     ).properties(
-        title='Daily Game Releases by Platform',
-        width=800,
-        height=400
+        title='Daily Game Releases by Platform'
     )
 
     return line_chart
+
+
+def create_genre_bar_chart(show_nsfw, start_date, end_date):
+    """Creates a horisontal bar chart for genre popularity."""
+    genre_data = get_genre_data(show_nsfw, start_date, end_date)
+
+    genre_bar_graph = alt.Chart(genre_data).mark_bar(color=COLOURS[0]).encode(
+        y=alt.Y('genre_name:N', title='Genre'),
+        x=alt.X('game_count:Q', title='Number of Games'),
+        tooltip=['genre_name:N', 'game_count:Q']
+    ).properties(
+        title='Genre Popularity Among Game Releases'
+    )
+
+    return genre_bar_graph
 
 
 
@@ -194,7 +216,7 @@ if __name__ == "__main__":
         st.write(" <br> ", unsafe_allow_html=True)
         show_nsfw = st.checkbox("NSFW")
 
-    st.markdown("<small style='color: #A26ED5;'>* The full list of released games is available at the bottom of this dashboard.</small>",
+    st.markdown("<small>* See the full list of available games <a href='Games'>here</a></small>",
                 unsafe_allow_html=True)
     
     # Changing stats
@@ -205,7 +227,12 @@ if __name__ == "__main__":
         st.altair_chart(create_os_bar_chart(
             os_selection, start_date, end_date), use_container_width=True)
         
-    st.altair_chart(create_release_line_chart(show_nsfw, start_date, end_date))
+    if start_date != end_date:
+        cols = st.columns(2)
+        with cols[0]:
+            st.altair_chart(create_release_line_chart(show_nsfw, start_date, end_date), use_container_width=True)
+        with cols[1]:
+            st.altair_chart(create_genre_bar_chart(show_nsfw, start_date, end_date), use_container_width=True)
 
 
     # All time stats
