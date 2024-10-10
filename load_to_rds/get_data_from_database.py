@@ -29,12 +29,11 @@ def get_ids(table_name: str, column_prefix: str = None) -> dict:
     if column_prefix is None:
         column_prefix = table_name
 
-    conn = get_connection()
-    with conn.cursor() as curs:
-        curs.execute(f"""SELECT {column_prefix}_name,
-                      {column_prefix}_id FROM {table_name};""")
-        rows = curs.fetchall()
-    conn.close()
+    with get_connection() as conn:
+        with conn.cursor() as curs:
+            curs.execute(f"""SELECT {column_prefix}_name,
+                        {column_prefix}_id FROM {table_name};""")
+            rows = curs.fetchall()
 
     name_to_id = {row[f"{column_prefix}_name"]: row[f"{column_prefix}_id"]
                   for row in rows}
@@ -44,4 +43,4 @@ def get_ids(table_name: str, column_prefix: str = None) -> dict:
 
 if __name__ == "__main__":
 
-    print(get_ids("platform", "platform"))
+    print(get_ids("platform"))
