@@ -1,7 +1,7 @@
 # pylint: skip-file
 
 import pytest
-from extract_epic import format_release_date, get_operating_systems, get_genres
+from extract_epic import format_release_date, get_operating_systems, get_genres, listing_is_game
 
 
 @pytest.mark.parametrize("input_date, expected_output", [
@@ -54,3 +54,20 @@ def test_get_operating_systems(input_tags, expected_output):
 ])
 def test_get_genres(input_tags, expected_output):
     assert get_genres(input_tags) == expected_output
+
+
+@pytest.mark.parametrize("input_categories, expected_output", [
+    ([{"path": "games/action/adventure"}], True),
+    ([{"path": "games/roleplaying"}], True),
+    ([{"path": "games/simulation"}], True),
+    ([{"path": "games/addons/expansion"}], False),
+    ([{"path": "games/digitalextras"}], False),
+    ([{"path": "games/spthidden"}], False),
+    ([{"path": "games/indie"}], True),
+    ([{"path": "games/arcade"}], True),
+    ([{"path": "games/addons"}, {"path": "games/digitalextras"}], False),
+    ([{"path": "games/addons"}, {"path": "games/soundtracks"}], False),
+    ([], True),
+])
+def test_listing_is_game(input_categories, expected_output):
+    assert listing_is_game(input_categories) == expected_output
