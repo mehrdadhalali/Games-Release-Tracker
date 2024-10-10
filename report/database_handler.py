@@ -100,3 +100,13 @@ def get_platform_average_price() -> dict:
 def get_free_to_play() -> list[dict]:
     """Returns a list of game objects which are currently
     free to play."""
+    select_str = """SELECT g.game_title, p.platform_name FROM game
+    AS g JOIN game_listing AS gl ON(g.game_id = gl.game_id)
+    JOIN platform as p ON(p.platform_id = gl.platform_id)
+    WHERE gl.release_price = 0 AND
+    gl.listing_date > CURRENT_TIMESTAMP - INTERVAL '7 days';"""
+    with get_connection() as conn:
+        with get_cursor(conn) as cur:
+            cur.execute(select_str)
+            results = cur.fetchall()
+    return {x['game_title']: x['platform_name'] for x in results}
