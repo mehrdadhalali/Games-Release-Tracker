@@ -58,8 +58,8 @@ FOREIGN KEY (os_id) REFERENCES operating_system(os_id)
 
 CREATE TABLE game_listing (
     listing_id INT GENERATED ALWAYS AS IDENTITY,
-    game_id INT NOT NULL UNIQUE ,
-    platform_id SMALLINT NOT NULL UNIQUE,
+    game_id INT NOT NULL ,
+    platform_id SMALLINT NOT NULL,
     release_price INT NOT NULL , 
     listing_url TEXT NOT NULL UNIQUE , 
 PRIMARY KEY (listing_id),
