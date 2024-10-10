@@ -14,128 +14,183 @@ from sl_queries import get_game_data, get_weekdays_data, get_daily_game_count
 
 # Page configuration
 st.set_page_config(layout="wide")
-bright_purple = '#A26ED5'
+COLOURS = ['#6a0dad', '#A26ED5', '#3b5998',
+           '#5780d9', '#a80dad', '#e426eb', '#0539f7']
 
-cols = st.columns([2, 0.75, 1, 0.35])
-with cols[0]:
-    st.title("Games Tracker")
+# Function to create the donut chart
 
-# Create a dropdown selection
-with cols[1]:
-    platform_selection = st.selectbox(
-        "Operating System:",
-        options=["-All-", "Windows", "Mac", "Linux"])
 
-with cols[2]:
-    # Get today's date to set as the maximum selectable date
-    today = datetime.now().date()
+def create_donut_chart():
+    release_data = get_weekdays_data()
+    release_data['release_date'] = pd.to_datetime(
+        release_data['release_date'])  # Convert
+    release_data['day_of_week'] = release_data['release_date'].dt.day_name()
 
-    # Set a specific minimum date (e.g., October 7, 2024)
-    min_date = datetime(2024, 10, 7).date()
+    day_counts = release_data['day_of_week'].value_counts().reset_index()
+    day_counts.columns = ['Day of Week', 'Count']
 
-    # Create a date range selector with "All time" as the default range
-    # Default to the range from min_date to today
-    default_start_date = min_date
-    default_end_date = today
+    total_counts = day_counts['Count'].sum()
+    day_counts['Percentage'] = (
+        day_counts['Count'] / total_counts) * 100  # Percentages
 
-    # Create the date input and store the output
-    date_range = st.date_input(
-        "Select date range:",
-        value=[default_start_date, default_end_date],  # Default range
-        min_value=min_date,  # Minimum selectable date
-        max_value=today,  # Exclude future dates
-        format="YYYY-MM-DD"
+    donut_chart = alt.Chart(day_counts).mark_arc(innerRadius=50).encode(
+        theta=alt.Theta(field='Percentage', type='quantitative'),
+        color=alt.Color(field='Day of Week', type='nominal', scale=alt.Scale(
+            domain=day_counts['Day of Week'].tolist(), range=COLOURS)),
+        tooltip=[
+            'Day of Week',
+            alt.Tooltip('Percentage:Q', format=".2f")
+        ]
+    ).properties(
+        title='Game Releases by Day of the Week'
+    )
+    return donut_chart
+
+# Function to create the line chart
+
+
+def create_line_chart():
+    daily_game_data = get_daily_game_count()
+    daily_game_data['release_date'] = pd.to_datetime(
+        daily_game_data['release_date'])
+
+    line_chart = alt.Chart(daily_game_data).mark_line(point=True).encode(
+        x=alt.X('release_date:T', title='Release Date',
+                axis=alt.Axis(format='%Y-%m-%d')),
+        y=alt.Y('total_games:Q', title='Total Games'),
+        tooltip=['release_date:T', 'total_games:Q']
+    ).properties(
+        title='Daily Distinct Game Releases'
+    )
+    return line_chart
+
+
+def display_game_table(show_nsfw, os_selection, start_date, end_date):
+    table_data = get_game_data(
+        show_nsfw, start_date, end_date, os_selection)
+
+    table_data.drop('os_name', axis=1, inplace=True)
+    # Rename columns to make them more readable
+    table_data = table_data.rename(
+        columns={
+            'game_name': 'Title',
+            'game_genres': 'Genres',
+            'release_date': 'Release Date',
+            'platform': 'Platform',
+            'release_price': 'Price',
+            'listing_url': 'Listing URL'  # Ensure listing_url is included for hyperlinks
+        }
     )
 
-    # Check if date_range has two dates to unpack
-    if len(date_range) == 2:
-        start_date, end_date = date_range
-    else:
-        st.warning("Please select both start and end dates.")
+    # Convert price from pennies to pounds and format it
+    table_data['Price'] = table_data['Price'].apply(lambda x: f"£{x:.2f}")
 
-with cols[3]:
-    st.write(" <br> ", unsafe_allow_html=True)
-    show_nsfw = st.checkbox("NSFW")
-
-
-# All time stats
-# Donut Chart
-release_data = get_weekdays_data()
-
-release_data['release_date'] = pd.to_datetime(release_data['release_date'])  # Convert
-release_data['day_of_week'] = release_data['release_date'].dt.day_name()
-
-day_counts = release_data['day_of_week'].value_counts().reset_index()
-day_counts.columns = ['Day of Week', 'Count']
-
-total_counts = day_counts['Count'].sum()
-day_counts['Percentage'] = (day_counts['Count'] / total_counts) * 100  # Percentages
-
-donut_chart = alt.Chart(day_counts).mark_arc(innerRadius=50).encode(
-    theta=alt.Theta(field='Percentage', type='quantitative'),
-    color=alt.Color(field='Day of Week', type='nominal'),
-    tooltip=[
-        'Day of Week',
-        alt.Tooltip('Percentage:Q', format=".2f")
-    ]
-).properties(
-    title=alt.TitleParams(text='Game Releases by Day of the Week',
-                          color=bright_purple)
-)
-
-#Line Chart
-daily_game_data = get_daily_game_count()
-
-daily_game_data['release_date'] = pd.to_datetime(
-    daily_game_data['release_date'])
-
-line_chart = alt.Chart(daily_game_data).mark_line(point=True).encode(
-    x=alt.X('release_date:T', title='Release Date',
-            axis=alt.Axis(format='%Y-%m-%d')),
-    y=alt.Y('total_games:Q', title='Total Games'),
-    tooltip=['release_date:T', 'total_games:Q']
-).properties(
-    title=alt.TitleParams(text='Daily Distinct Game Releases',
-                          color=bright_purple)
-)
-
-st.subheader("All Time Stats")
-st.markdown(
-    "<style>.line { border: 0.5px solid; margin: 0; }</style><div class='line'></div>", unsafe_allow_html=True)
-cols = st.columns(2)
-with cols[0]:
-    st.altair_chart(donut_chart, use_container_width=True)
-with cols[1]:
-    st.altair_chart(line_chart, use_container_width=True)
+    # Display the DataFrame with clickable URLs
+    st.dataframe(
+        table_data,
+        column_config={
+            "Listing URL": st.column_config.LinkColumn()  # Make the Listing URL clickable
+        },
+        use_container_width=True
+    )
 
 
-st.subheader("List of Games")
-st.markdown(
-    "<style>.line { border: 0.5px solid; margin: 0; }</style><div class='line'></div>", unsafe_allow_html=True)
+def create_platform_bar_chart(os_selection, start_date, end_date, show_nsfw):
+    """Chart for the number of games released on each platform."""
+    game_data = get_game_data(show_nsfw, start_date, end_date, os_selection)
 
-# Game releases table
-table_data = get_game_data(show_nsfw)
+    # Count the number of games per platform
+    platform_counts = game_data['platform'].value_counts().reset_index()
+    platform_counts.columns = ['Platform', 'Game Count']
 
-# Drop the index and rename columns to make them more readable
-table_data = table_data.reset_index(drop=True).rename(
-    columns={
-        'game_name': 'Title',
-        'game_genres': 'Genres',
-        'release_date': 'Release Date',
-        'platform': 'Platform',
-        'release_price': 'Price',
-        'listing_url': 'Listing URL'  # Ensure listing_url is included for hyperlinks
-    }
-)
+    # Create the bar chart
+    bar_chart = alt.Chart(platform_counts).mark_bar(color=COLOURS[0]).encode(
+        x=alt.X('Platform:N', title='Gaming Platform',
+                axis=alt.Axis(labelAngle=0)),
+        y=alt.Y('Game Count:Q', title='Number of Games'),
+        tooltip=['Platform:N', 'Game Count:Q']
+    ).properties(
+        title='Number of Games Released by Platform'
+    )
+    return bar_chart
 
-# Convert price from pennies to pounds
-table_data['Price'] = (table_data['Price'] / 100).round(2)
 
-# Now use st.dataframe with column_config
-st.dataframe(
-    table_data,
-    column_config={
-        "Listing URL": st.column_config.LinkColumn()  # Make the Listing URL clickable
-    },
-    use_container_width=True
-)
+def create_os_bar_chart(os_selection, start_date, end_date):
+    # Always show NSFW, so set it to True
+    show_nsfw = True
+
+    # Get the game data based on the selected filters
+    game_data = get_game_data(show_nsfw, start_date, end_date, os_selection)
+
+    # Count the number of games per operating system
+    os_counts = game_data['os_name'].value_counts().reset_index()
+    os_counts.columns = ['Operating System', 'Game Count']
+
+    # Create the bar chart
+    os_bar_chart = alt.Chart(os_counts).mark_bar(color=COLOURS[2]).encode(
+        x=alt.X('Operating System:N', title='Operating System',
+                axis=alt.Axis(labelAngle=0)),
+        y=alt.Y('Game Count:Q', title='Number of Games'),
+        tooltip=['Operating System:N', 'Game Count:Q']
+    ).properties(
+        title='Number of Games Released by Operating System'
+    )
+
+    return os_bar_chart
+
+
+if __name__ == "__main__":
+    # User input for OS selection, date range, and NSFW checkbox
+    cols = st.columns([2, 0.75, 1, 0.35])
+    with cols[0]:
+        st.title("Games Tracker")
+    with cols[1]:
+        os_selection = st.selectbox(
+            "Operating System:",
+            options=["-All-", "Windows", "Mac", "Linux"]
+        )
+    with cols[2]:
+        today = datetime.now().date()
+        min_date = datetime(2024, 10, 7).date()
+        date_range = st.date_input(
+            "Select date range:",
+            value=[min_date, today],
+            min_value=min_date,
+            max_value=today,
+            format="YYYY-MM-DD"
+        )
+        start_date, end_date = date_range if len(
+            date_range) == 2 else (None, None)
+    with cols[3]:
+        st.write(" <br> ", unsafe_allow_html=True)
+        show_nsfw = st.checkbox("NSFW")
+
+    st.markdown("<small style='color: #A26ED5;'>* The full list of released games is available at the bottom of this dashboard.</small>",
+                unsafe_allow_html=True)
+    
+    # Changing stats
+    cols = st.columns(2)
+    with cols[0]:
+        st.altair_chart(create_platform_bar_chart(os_selection, start_date, end_date, show_nsfw), use_container_width=True)
+    with cols[1]:
+        st.altair_chart(create_os_bar_chart(
+            os_selection, start_date, end_date), use_container_width=True)
+
+
+    # All time stats
+    st.subheader("All Time Stats")
+    st.markdown(
+        "<style>.line { border: 0.5px solid; margin: 0; }</style><div class='line'></div>", unsafe_allow_html=True)
+
+    cols = st.columns(2)
+    with cols[0]:
+        st.altair_chart(create_donut_chart(), use_container_width=True)
+    with cols[1]:
+        st.altair_chart(create_line_chart(), use_container_width=True)
+
+    st.subheader("List of Games")
+    st.markdown(
+        "<style>.line { border: 0.5px solid; margin: 0; }</style><div class='line'></div>", unsafe_allow_html=True)
+
+    # Game releases table
+    display_game_table(show_nsfw, os_selection, start_date, end_date)
