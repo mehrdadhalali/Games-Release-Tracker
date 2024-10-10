@@ -1,3 +1,7 @@
+boto3
+psycopg2
+python-dotenv
+pandas
 pytest
 pylint
 pytest--cov
