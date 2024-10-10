@@ -6,3 +6,4 @@ python-dotenv
 boto3
 altair
 pandas
+psycopg2
