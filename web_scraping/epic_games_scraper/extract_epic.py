@@ -85,3 +85,11 @@ def parse_listing(listing: dict) -> dict:
         "url": get_game_url(listing['mappings']),
         "img_url": get_listing_image(listing['keyImages'])
     }
+
+
+def parse_listings(listings: list[dict]) -> dict:
+    """Parses all listings, creates the output dictionary."""
+    return {
+        "platform": "epic",
+        "listings": [parse_listing(listing) for listing in listings]
+    }
