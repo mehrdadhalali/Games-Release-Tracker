@@ -1,6 +1,7 @@
 boto3
 psycopg2
 python-dotenv
+reportlab
 pandas
 pytest
 pylint
