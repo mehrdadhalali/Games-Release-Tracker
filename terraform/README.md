@@ -2,7 +2,7 @@
 
 ## Overview
 
-This terraform folder creates all the required AWS services for this project bar the ECR's containing the images. This includes the AWS postgres RDS ...
+This terraform folder creates all the required AWS services for this project bar the ECR's containing the images. This includes the AWS postgres RDS, the extract lambdas , ....
 
 ## Set-up and Running
 
