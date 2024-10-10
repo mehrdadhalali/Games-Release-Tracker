@@ -93,3 +93,19 @@ def parse_listings(listings: list[dict]) -> dict:
         "platform": "epic",
         "listings": [parse_listing(listing) for listing in listings]
     }
+
+
+def listing_is_game(categories: list[dict]) -> bool:
+    """Returns true if a listing is a game. Filters out DLCs, soundtracks, etc."""
+    non_game_keywords = {'addons', 'digitalextras',
+                         'spthidden'}
+    return not any(keyword in category['path']
+                   for category in categories for keyword in non_game_keywords)
+
+
+def write_json_to_file(json_str: str, file_name: str):
+    """Writes a JSON string to a file locally."""
+    json_obj = loads(json_str)
+    so_pretty = dumps(json_obj, indent=4)
+    with open(file_name, 'w', encoding="UTF-8") as f:
+        f.write(so_pretty)
