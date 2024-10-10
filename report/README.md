@@ -2,8 +2,8 @@
 A script to generate weekly summary reports of the games data collected.
 
 ## Features:
-- Generates PDF files summarising key metrics for the past week:
-- Emails subscribers with PDF report attachments
+- Generates PDF files summarising key metrics for the past week.
+- Emails subscribers with PDF report attachments.
 
 ## Setup:
 
@@ -27,9 +27,9 @@ AWS_SECRET_KEY=XXXXXX
 
 
 ## Files Explained
-- `Dockerfile`:
-- `email_report.py`
-- `generate_report.py`
-- `lambda_handler.py`
-- `push-to-ecr.sh`
-- `requirements.txt`
+- `Dockerfile`: Contains instructions to build the Docker image
+- `email_report.py`: Handles email functionality for sending reports.
+- `generate_report.py`: Generates the PDF report for summarising the game data.
+- `lambda_handler.py`: AWS Lambda entry point for triggering the report generation.
+- `push-to-ecr.sh`: Script to build, tag, and push the Docker image to the AWS ECR repository.
+- `requirements.txt`: Lists the Python dependencies for the project.
