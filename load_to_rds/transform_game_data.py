@@ -9,8 +9,9 @@ NSFW_TAGS = ["psychedelic", "adult content", "hentai", "sexual content",
 def has_nsfw_tags(game: dict) -> bool:
     """Does this game have any NSFW tags?"""
 
-    return any(tag.lower() in NSFW_TAGS
-               for tag in game["tags"])
+    return any(nsfw_tag in tag.lower()
+               for tag in game["tags"]
+               for nsfw_tag in NSFW_TAGS)
 
 
 def transform_to_tuples(game: dict) -> tuple:
