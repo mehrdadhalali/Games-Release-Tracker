@@ -1,3 +1,6 @@
+requests
+gql
+aiohttp
 pytest
 pylint
 pytest--cov

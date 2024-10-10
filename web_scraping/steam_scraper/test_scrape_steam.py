@@ -6,7 +6,7 @@ from unittest import mock
 
 import pytest
 
-from scrape_steam import load_page_source, format_price, get_steam_db_url
+from scrape_steam import load_page_source, format_price, get_steam_app_url
 
 
 @pytest.mark.parametrize("price_str, expected", [
@@ -65,12 +65,12 @@ def test_load_page_source_calls_get(mocked_get):
 @pytest.mark.parametrize(
     "app_id, expected_url",
     [
-        ("12345", "https://steamdb.info/app/12345/info/"),
-        ("67890", "https://steamdb.info/app/67890/info/"),
-        ("abcde", "https://steamdb.info/app/abcde/info/"),
-        ("", "https://steamdb.info/app//info/"),
+        ("12345", "https://store.steampowered.com/app/12345/"),
+        ("67890", "https://store.steampowered.com/app/67890/"),
+        ("abcde", "https://store.steampowered.com/app/abcde/"),
+        ("", "https://store.steampowered.com/app//"),
     ]
 )
-def test_get_steam_db_url(app_id, expected_url):
-    """Tests that steam db urls are correctly formed."""
-    assert get_steam_db_url(app_id) == expected_url
+def test_get_steam_app_url(app_id, expected_url):
+    """Tests that steam app urls are correctly formed."""
+    assert get_steam_app_url(app_id) == expected_url
