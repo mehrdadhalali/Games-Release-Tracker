@@ -28,7 +28,6 @@ def get_game_data(show_nsfw):
     Retrieves game information for the dashboard table including
     name, genres, release date, platform, price, and listing URL.
     '''
-    # Adjust the query based on the NSFW filter
     query = """
     SELECT
         g.game_title AS game_name,
@@ -48,24 +47,40 @@ def get_game_data(show_nsfw):
     """
 
     conn = get_connection()
-    df = pd.read_sql(query, conn, params=(show_nsfw,)) # Checkbox result
-    conn.close()
+    cursor = conn.cursor()
+    cursor.execute(query, (show_nsfw,))
+    result = cursor.fetchall()
 
+    df = pd.DataFrame(result, columns=[
+        'game_name', 'game_genres', 'release_date', 'platform', 'release_price', 'listing_url'
+    ])
+
+    cursor.close()
+    conn.close()
     return df
+
 
 
 # All time stats
 
-def get_weekdays_data():  # Donut chart
+def get_weekdays_data():
     '''Retrieves release dates from the database'''
     query = "SELECT release_date FROM game;"
+
     conn = get_connection()
-    df = pd.read_sql(query, conn)
+    cursor = conn.cursor()
+    cursor.execute(query)
+    result = cursor.fetchall()
+
+    # Create DataFrame from the fetched result manually
+    df = pd.DataFrame(result, columns=['release_date'])
+
+    cursor.close()
     conn.close()
     return df
 
 
-def get_daily_game_count():  # Line chart
+def get_daily_game_count():
     '''Retrieves the count of distinct game titles for each release date.'''
     query = """
     SELECT
@@ -75,7 +90,15 @@ def get_daily_game_count():  # Line chart
     GROUP BY g.release_date
     ORDER BY g.release_date;
     """
+
     conn = get_connection()
-    df = pd.read_sql(query, conn)
+    cursor = conn.cursor()
+    cursor.execute(query)
+    result = cursor.fetchall()
+
+    # Create DataFrame from the fetched result manually
+    df = pd.DataFrame(result, columns=['release_date', 'total_games'])
+
+    cursor.close()
     conn.close()
     return df
