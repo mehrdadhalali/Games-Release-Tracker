@@ -17,3 +17,4 @@ def lambda_handler(event, context):
     free_games = get_free_to_play()
     generate_and_send_report(total_games, total_platforms,
                              genre_dict, platform_price, platform_dict, free_games)
+    return {"statusCode": 200}
