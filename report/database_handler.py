@@ -50,7 +50,16 @@ def get_genre_listing_count() -> dict:
         with get_cursor(conn) as cur:
             cur.execute(select_str)
             results = cur.fetchall()
-    return {x['genre_name']: x['genre_count'] for x in results}
+    genre_count_dict = {}
+    other_count = 0
+    for i, row in enumerate(results):
+        if i < 8:
+            genre_count_dict[row['genre_name']] = row['genre_count']
+        else:
+            other_count += row['genre_count']
+    if other_count > 0:
+        genre_count_dict['Other'] = other_count
+    return genre_count_dict
 
 
 def get_all_genres() -> list[str]:
