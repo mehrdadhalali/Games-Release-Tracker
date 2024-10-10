@@ -43,16 +43,16 @@ def email_summary_report(ses_client: client, first_name: str, recipient: str, re
         })
 
 
-def generate_and_send_report(total_games: int, total_platforms: int, genre_data: dict, platform_price: dict, platform_releases: dict):
+def generate_and_send_report(total_games: int, total_platforms: int, genre_data: dict,
+                             platform_price: dict, platform_releases: dict, free_games: dict):
     """Generates the summary report and sends it to each subscriber."""
     load_dotenv()
     summary_report = generate_summary_report_pdf(
-        total_games, total_platforms, genre_data, platform_price, platform_releases)
+        total_games, total_platforms, genre_data,
+        platform_price, platform_releases, free_games)
     mail_client = client('ses', region_name=ENV['AWS_REGION_NAME'])
-    # sub_info = get_subscriber_info()
-    # for subscriber in sub_info:
-    #     name = get_subscriber_first_name(subscriber)
-    #     email_summary_report(mail_client, name,
-    #                          subscriber['sub_email'], summary_report)
-    email_summary_report(
-        mail_client, 'Leon', 'trainee.leon.simpson@sigmalabs.co.uk', summary_report)
+    sub_info = get_subscriber_info()
+    for subscriber in sub_info:
+        name = get_subscriber_first_name(subscriber)
+        email_summary_report(mail_client, name,
+                             subscriber['sub_email'], summary_report)
