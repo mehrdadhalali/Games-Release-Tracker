@@ -36,7 +36,7 @@ def get_game_data(show_nsfw, start_date, end_date, os_selection, search_query=""
         p.platform_name AS platform,
         gl.release_price,
         gl.listing_url,
-        os.os_name
+        STRING_AGG(DISTINCT os.os_name, ', ') AS os_name
     FROM game g
     LEFT JOIN game_genre_assignment ga ON g.game_id = ga.game_id
     LEFT JOIN genre ge ON ga.genre_id = ge.genre_id
@@ -66,7 +66,7 @@ def get_game_data(show_nsfw, start_date, end_date, os_selection, search_query=""
         params.extend([search_param, search_param])
 
     query += """
-    GROUP BY g.game_title, g.release_date, p.platform_name, gl.release_price, gl.listing_url, os_name
+    GROUP BY g.game_title, g.release_date, p.platform_name, gl.release_price, gl.listing_url
     ORDER BY g.release_date DESC;
     """
 
