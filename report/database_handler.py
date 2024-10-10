@@ -37,9 +37,8 @@ def get_subscriber_info() -> dict:
     return {sub['sub_name']: sub['sub_email'] for sub in results}
 
 
-def get_genre_listing_count() -> dict:
-    """Returns a dictionary of mapping genre to listing
-     counts from the past week."""
+def fetch_genre_data() -> list:
+    """Executes the SQL query to fetch genre data from the database."""
     select_str = """SELECT gr.genre_name, COUNT(*) AS genre_count
     FROM genre AS gr JOIN game_genre_assignment AS gga 
     ON gga.genre_id = gr.genre_id JOIN game AS g 
@@ -50,6 +49,12 @@ def get_genre_listing_count() -> dict:
         with get_cursor(conn) as cur:
             cur.execute(select_str)
             results = cur.fetchall()
+    return results
+
+
+def get_genre_listing_count() -> dict:
+    """Processes the genre data and returns a dictionary of genre counts."""
+    results = fetch_genre_data()
     genre_count_dict = {}
     other_count = 0
     for i, row in enumerate(results):
