@@ -1,4 +1,5 @@
 # pylint: disable=C0103
+# pylint: disable=W0621
 """
 This is the main dashboard for the Games Tracker Streamlit application.
 It includes data visualisations on the information collected from Steam, GOG and Epic,
