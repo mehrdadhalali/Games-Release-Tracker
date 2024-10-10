@@ -34,7 +34,7 @@ def get_subscriber_info() -> dict:
         with get_cursor(conn) as cur:
             cur.execute(select_str)
             results = cur.fetchall()
-    return {x['sub_name']: x['sub_email'] for x in results}
+    return {sub['sub_name']: sub['sub_email'] for sub in results}
 
 
 def get_genre_listing_count() -> dict:
