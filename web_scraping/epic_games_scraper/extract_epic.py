@@ -21,3 +21,11 @@ def load_graph_ql_query(file_name: str) -> gql:
     filter_string = f'[{start_time},{end_time}]'
     query = query.replace("{{RELEASE_DATE}}", filter_string)
     return gql(query)
+
+
+def execute_query(q: gql) -> str:
+    """Executes a GraphQL query on a URL."""
+    transport = AIOHTTPTransport(EPIC_URL)
+    client = Client(transport=transport)
+    result = client.execute(q)
+    return dumps(result)
