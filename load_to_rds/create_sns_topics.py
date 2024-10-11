@@ -42,3 +42,7 @@ def create_topics() -> list[dict]:
         })
 
     return topics
+
+
+if __name__ == "__main__":
+    ...
