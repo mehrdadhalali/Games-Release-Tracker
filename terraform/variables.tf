@@ -33,6 +33,26 @@ variable "DB_PORT" {
   
 }
 
+variable "AWS_ACCOUNT_ID" {
+    type = number
+  
+}
+
+variable "DB_HOST" {
+    type = string
+  
+}
+
+variable "ECR_REPO_NAME" {
+    type = string
+  
+}
+
+variable "FROM_EMAIL" {
+    type = string
+  
+}
+
 variable "SUBNET_NAME" {
     type = string
   
