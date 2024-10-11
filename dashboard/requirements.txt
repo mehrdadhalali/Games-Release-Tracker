@@ -7,3 +7,6 @@ boto3
 altair
 pandas
 psycopg2
+nltk
+wordcloud
+matplotlib
