@@ -1,7 +1,7 @@
 boto3
 psycopg2-binary
 python-dotenv
-keleido
+kaleido
 xhtml2pdf
 plotly_express
 pytest
