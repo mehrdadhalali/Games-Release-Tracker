@@ -5,7 +5,7 @@ from json import load
 from create_topic_message import format_price
 
 
-def create_ugly_disgusting_message_i_hate_it(games: list[dict], genre: str):
+def create_temp_message(games: list[dict], genre: str):
     """Creates a text format of the message we're emailing."""
 
     message = f"Here are newly released {genre} games:\n\n"
@@ -24,7 +24,7 @@ if __name__ == "__main__":
 
         games = load(f)
 
-    with open("ugly_msg.txt", "w") as f:
+    with open("temp_message.txt", "w") as f:
 
-        f.write(create_ugly_disgusting_message_i_hate_it(
+        f.write(create_temp_message(
             games["listings"], "Cool"))
