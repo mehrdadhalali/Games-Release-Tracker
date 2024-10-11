@@ -9,6 +9,3 @@ def lambda_handler(event, context):
     """Function run when AWS Lambda is triggered."""
     generate_and_send_report()
     return {"statusCode": 200}
-
-
-lambda_handler(None, None)
