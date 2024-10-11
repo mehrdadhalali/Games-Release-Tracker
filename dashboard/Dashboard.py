@@ -64,8 +64,8 @@ if __name__ == "__main__":
         st.altair_chart(create_platform_bar_chart(os_selection, start_date, end_date, show_nsfw),
                         use_container_width=True)
     with cols[1]:
-        st.altair_chart(create_os_bar_chart(
-            os_selection, start_date, end_date), use_container_width=True)
+        st.altair_chart(create_os_bar_chart(show_nsfw, os_selection, start_date, end_date),
+                        use_container_width=True)
 
     if start_date != end_date:
         cols = st.columns(2)
