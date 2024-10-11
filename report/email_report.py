@@ -55,5 +55,5 @@ def generate_and_send_report(total_games: int, total_platforms: int, genre_data:
     sub_info = get_subscriber_info()
     for subscriber in sub_info:
         name = get_subscriber_first_name(subscriber)
-        email_summary_report(mail_client, name,
-                             subscriber['sub_email'], summary_report)
+        email_summary_report(
+            mail_client, name, sub_info[subscriber], summary_report)
