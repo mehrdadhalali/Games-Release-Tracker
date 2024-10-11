@@ -55,7 +55,7 @@ def get_features(tags: list[dict]):
 def format_release_date(release_date_str: str) -> str:
     """Returns a string formatted from UTC to %d/%m/%Y."""
     date_obj = datetime.fromisoformat(release_date_str.replace("Z", "+00:00"))
-    return date_obj.strftime("%d/%m/%y")
+    return date_obj.strftime("%d/%m/%Y")
 
 
 def get_game_url(mappings: list[dict]) -> str:
