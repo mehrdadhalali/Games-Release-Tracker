@@ -29,7 +29,6 @@ def remove_duplicates(listings_list: list[dict], already_scraped: list[str]) -> 
 
 def update_genres(new_genres: list[str], conn: connection) -> dict:
     """Adds any new genres to the genre table, returning their id map."""
-    print(new_genres)
     query = "INSERT INTO genre (genre_name) VALUES %s RETURNING genre_id, genre_name;"
 
     with conn.cursor() as curs:
