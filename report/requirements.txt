@@ -2,7 +2,6 @@ boto3
 psycopg2-binary
 python-dotenv
 reportlab
-pandas
 pytest
 pylint
 pytest--cov
