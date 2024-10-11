@@ -130,7 +130,7 @@ def upload_all_listings_to_database(json_data: dict, maps: list[dict], conn: con
                       } listings from {platform}.")
 
 
-def load_to_db():
+def load_to_db(all_scraped_data: list):
     """The main function
         Uploads all of the gathered data to the database."""
 
@@ -140,14 +140,6 @@ def load_to_db():
         "platform": get_ids("platform", conn),
         "os": get_ids("operating_system", conn,  "os")
     }
-
-    with open("gog_data.json", "r", encoding="UTF-8") as f:
-        gog_data = load(f)
-
-    with open("steam_data.json", "r", encoding="UTF-8") as f:
-        steam_data = load(f)
-
-    all_scraped_data = [steam_data, gog_data]
 
     already_scraped = get_listings_for_the_day(get_today(), conn)
 
