@@ -368,7 +368,7 @@ resource "aws_sfn_state_machine" "scrape-pipeline-state-function" {
         "OutputPath": "$.Payload",
         "Parameters": {
           "Payload.$": "$",
-          "FunctionName": "arn:aws:lambda:eu-west-2:129033205317:function:c13-dan-example:$LATEST"
+          "FunctionName": "arn:aws:lambda:eu-west-2:129033205317:function:c13-lakshmibai-transform-load-lambda:$LATEST"
         },
         "Retry": [
           {
