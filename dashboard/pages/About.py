@@ -6,6 +6,16 @@ import streamlit as st
 
 st.set_page_config(layout="wide")
 
+st.markdown(
+    """
+    <style>
+    a {
+        color: #A26ED5 !important;  /* Override the link color */
+    }
+    </style>
+    """,
+    unsafe_allow_html=True)  # Change hyperlink colour
+
 # Title
 st.title("About Games Tracker")
 

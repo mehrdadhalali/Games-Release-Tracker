@@ -10,7 +10,7 @@ from boto3 import client
 from dotenv import load_dotenv
 
 from database_handler import get_subscriber_info
-from generate_report import generate_summary_report_pdf
+from generate_report import create_report
 
 
 def get_subscriber_first_name(subscriber_name: str) -> str:
@@ -43,17 +43,15 @@ def email_summary_report(ses_client: client, first_name: str, recipient: str, re
         })
 
 
-def generate_and_send_report(total_games: int, total_platforms: int, genre_data: dict,
-                             platform_price: dict, platform_releases: dict, free_games: dict):
+def generate_and_send_report():
     """Generates the summary report and sends it to each subscriber."""
     load_dotenv()
-    summary_report = generate_summary_report_pdf(
-        total_games, total_platforms, genre_data,
-        platform_price, platform_releases, free_games)
-    mail_client = client('ses', region_name=ENV['AWS_REGION_NAME'], aws_access_key_id=ENV['MY_AWS_ACCESS_KEY'],
+    summary_report = create_report()
+    mail_client = client('ses', region_name=ENV['AWS_REGION_NAME'],
+                         aws_access_key_id=ENV['MY_AWS_ACCESS_KEY'],
                          aws_secret_access_key=ENV['MY_AWS_SECRET_KEY'],)
     sub_info = get_subscriber_info()
     for subscriber in sub_info:
         name = get_subscriber_first_name(subscriber)
-        email_summary_report(mail_client, name,
-                             subscriber['sub_email'], summary_report)
+        email_summary_report(
+            mail_client, name, sub_info[subscriber], summary_report)

@@ -10,8 +10,17 @@ def lambda_handler(event, session):
     """The lambda handler.
         Event should be a list of inputs from other lambdas."""
 
-    scraped_data = [output["body"]
-                    for output in event]
+    scraped_data = []
+
+    for output in event:
+
+        data = loads(output["body"]["data"])
+
+        if not isinstance(data, dict):
+            data = loads(data)
+
+        scraped_data.append(data)
 
     load_to_db(scraped_data)
+
     update_SNS_topics(scraped_data)
