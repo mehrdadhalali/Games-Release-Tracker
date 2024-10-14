@@ -55,7 +55,7 @@ def get_features(tags: list[dict]):
 def format_release_date(release_date_str: str) -> str:
     """Returns a string formatted from UTC to %d/%m/%Y."""
     date_obj = datetime.fromisoformat(release_date_str.replace("Z", "+00:00"))
-    return date_obj.strftime("%d/%m/%y")
+    return date_obj.strftime("%d/%m/%Y")
 
 
 def get_game_url(mappings: list[dict]) -> str:
@@ -80,6 +80,7 @@ def parse_listing(listing: dict) -> dict:
         "release_date": format_release_date(listing["releaseDate"]),
         "operating_systems": get_operating_systems(listing['tags']),
         "genres": get_genres(listing['tags']),
+        "is_nsfw": False,  # Epic Games do not allow NSFW listings.
         "tags": get_features(listing['tags']),
         "current_price": listing["currentPrice"],
         "url": get_game_url(listing['mappings']),

@@ -43,7 +43,7 @@ def create_donut_chart():
     ).properties(
         title=alt.TitleParams(
             text='Distribution of Game Releases by Weekday',
-            anchor='middle',
+            anchor='end',
             fontSize=17
         )
     )
@@ -127,18 +127,21 @@ def create_platform_bar_chart(os_selection, start_date, end_date, show_nsfw):
     return bar_chart
 
 
-def create_os_bar_chart(os_selection, start_date, end_date):
-    # Always show NSFW, so set it to True
-    show_nsfw = True
-
+def create_os_bar_chart(show_nsfw, os_selection, start_date, end_date):
+    """Bar chart for releases per operating system."""
     # Get the game data based on the selected filters
     game_data = get_game_data(show_nsfw, start_date, end_date, os_selection)
+
+    # Split the 'os_name' column into individual operating systems
+    game_data['os_name'] = game_data['os_name'].str.split(', ')
+
+    # Flatten the DataFrame so that each OS has its own row
+    game_data = game_data.explode('os_name')
 
     # Count the number of games per operating system
     os_counts = game_data['os_name'].value_counts().reset_index()
     os_counts.columns = ['Operating System', 'Game Count']
 
-    # Create the bar chart
     os_bar_chart = alt.Chart(os_counts).mark_bar(color=COLOURS[0]).encode(
         x=alt.X('Operating System:N', title='Operating System',
                 axis=alt.Axis(labelAngle=0)),
