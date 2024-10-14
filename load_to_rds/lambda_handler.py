@@ -1,5 +1,7 @@
 """The script that gets called from the lambda."""
 
+from json import loads
+
 from upload_to_db import load_to_db
 
 # pylint: disable=W0613

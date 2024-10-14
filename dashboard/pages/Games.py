@@ -1,3 +1,4 @@
+# pylint: disable=E0401
 """
 This is the Games pages of the application, where users can search
 for games, compare the prices, and get directed to their chosen platform.
