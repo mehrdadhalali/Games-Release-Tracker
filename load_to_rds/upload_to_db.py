@@ -1,6 +1,6 @@
 """This script is for uploading the listings to the database."""
 
-from json import load
+from json import loads
 from datetime import datetime
 
 from psycopg2.extensions import connection
