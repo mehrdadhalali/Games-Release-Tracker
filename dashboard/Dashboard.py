@@ -10,7 +10,7 @@ from datetime import datetime
 import streamlit as st
 import nltk
 
-from functions import create_donut_chart, create_genre_bar_chart, create_line_chart, create_os_bar_chart, create_platform_bar_chart, create_release_line_chart, display_game_table, create_word_cloud, preprocess_descriptions
+from functions import create_donut_chart, create_genre_bar_chart, create_line_chart, create_os_bar_chart, create_platform_bar_chart, create_release_line_chart, create_word_cloud, preprocess_descriptions
 from sl_queries import get_game_descriptions
 
 # Download the 'punkt' tokenizer model
@@ -97,10 +97,9 @@ if __name__ == "__main__":
     st.markdown(
         "<style>.line { border: 0.5px solid; margin: 0; }</style><div class='line'></div>",
         unsafe_allow_html=True)
-    
+
     descriptions = get_game_descriptions(
             show_nsfw, start_date, end_date, os_selection)
     word_counts = preprocess_descriptions(descriptions)
     word_cloud_fig = create_word_cloud(word_counts)
     st.pyplot(word_cloud_fig, use_container_width=True)
-    

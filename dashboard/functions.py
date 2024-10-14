@@ -72,41 +72,6 @@ def create_line_chart():
     return line_chart
 
 
-def display_game_table(show_nsfw, os_selection, start_date, end_date, search_query):
-    """Generates a table for the Games page depending on user selection and input."""
-    table_data = get_game_data(
-        show_nsfw, start_date, end_date, os_selection, search_query
-    )
-
-    table_data.drop('os_name', axis=1, inplace=True)
-
-    table_data = table_data.rename(
-        columns={
-            'game_name': 'Title',
-            'game_genres': 'Genres',
-            'release_date': 'Release Date',
-            'platform': 'Platform',
-            'release_price': 'Price'
-        }
-    )
-
-    table_data['Price'] = table_data['Price'].apply(lambda x: f"£{x:.2f}")
-    table_data['Price'] = table_data['Price'].replace("£0.00", "Free")
-
-    # Add clickable links to game names
-    table_data['Title'] = table_data.apply(
-        lambda row: f'<a href="{row["listing_url"]
-                                }" target="_blank">{row["Title"]}</a>',
-        axis=1
-    )
-
-    table_data.drop('listing_url', axis=1, inplace=True)
-
-    html_table = table_data.to_html(escape=False, index=False)
-
-    st.markdown(html_table, unsafe_allow_html=True)
-
-
 def create_platform_bar_chart(os_selection, start_date, end_date, show_nsfw):
     """Chart for the number of games released on each platform."""
     game_data = get_game_data(show_nsfw, start_date, end_date, os_selection)
