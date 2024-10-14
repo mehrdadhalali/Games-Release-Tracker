@@ -9,7 +9,7 @@ def lambda_handler(event, session):
     """The lambda handler.
         Event should be a list of inputs from other lambdas."""
 
-    scraped_data = [output["body"]
+    scraped_data = [output["body"]["data"]
                     for output in event]
 
     load_to_db(scraped_data)
