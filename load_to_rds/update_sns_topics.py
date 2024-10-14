@@ -73,5 +73,5 @@ def update_SNS_topics(scraped_data: list[dict]):
             sns.publish(
                 TopicArn=topic["topic_arn"],
                 Message=email_contents,
-                Subject=f"New {genre} Games Released!!"
+                Subject=f"New {genre.title()} Games Released!!"
             )
