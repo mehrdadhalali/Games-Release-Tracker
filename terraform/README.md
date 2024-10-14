@@ -2,7 +2,15 @@
 
 ## Overview
 
-This terraform folder creates all the required AWS services for this project bar the ECR's containing the images. This includes the AWS postgres RDS, the extract lambdas , ....
+This terraform folder creates all the required AWS services for this project bar the ECR's containing the images. 
+This includes 
+    - AWS postgres RDS
+    - Extract lambdas
+    - Report lambda 
+    - Transform & load lambda
+    - AWS Step functions State Machine 
+    - Report Scheduler
+    - Pipeline Scheduler
 
 ## Set-up and Running
 
@@ -15,8 +23,12 @@ DB_PASSWORD = "XXXX"
 DB_USER = "XXXX"
 DB_NAME="XXXX"
 DB_PORT="XXXX"
+DB_HOST="XXXX"
 SUBNET_NAME="XXXX"
 VPC_ID="XXXX"
+FROM_EMAIL="XXXX"
+ECR_REPO_NAME="XXXX"
+AWS_ACCOUNT_ID="XXXX"
 ```
 
 Before running this terraform script, you need to go into the [web_scraping](../web_scraping), [report](../report),[load_to_rds](../load_to_rds) and [dashboard](../dashboard) folders and follow the instructions for `Deploying to the Cloud`, which involves making the ECRs containing the Docker images. Once the ECR's have been created then the terraform can be run.

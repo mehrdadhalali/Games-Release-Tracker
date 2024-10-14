@@ -132,6 +132,12 @@ data "aws_ecr_image" "report-image" {
   image_tag       = "latest"
 }
 
+data "aws_ecr_image" "transform-image" {
+  repository_name = "c13-lakshmibai-transform-load"
+  image_tag       = "latest"
+}
+
+
 # The lambda functions
 
 resource "aws_lambda_function" "gog-scraper-lambda" {
@@ -199,9 +205,193 @@ resource "aws_lambda_function" "report-lambda" {
   }
 }
 
+resource "aws_lambda_function" "transform-load-lambda" {
+  function_name = "c13-lakshmibai-transform-load-lambda"
+  role          = aws_iam_role.iam_for_lambda.arn
+
+  package_type = "Image"
+  timeout = 900
+  memory_size = 512
+
+  image_uri = data.aws_ecr_image.transform-image.image_uri
+  environment {
+    variables = {
+      DB_HOST=var.DB_HOST
+      DB_NAME= var.DB_NAME
+      DB_USER=var.DB_USER
+      DB_PASSWORD=var.DB_PASSWORD
+      DB_PORT=var.DB_PORT
+    }
+  }
+}
+
+### STEP FUNCTION
+
+
+# iam role
+resource "aws_iam_role" "step_function_role" {
+  name = "c13-lakshmibai-step-function-role"
+  assume_role_policy = jsonencode( {
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "Service": "states.amazonaws.com"
+            },
+            "Action": "sts:AssumeRole"
+        }
+    ]
+} )
+}
+
+
+# iam policy 
+resource "aws_iam_policy" "step_function_policy" {
+  name = "c13-lakshmibai-step-function-policy"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = "lambda:InvokeFunction"
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+# attaching the role and the policy 
+resource "aws_iam_role_policy_attachment" "attach_step_function_policy" {
+  role       = aws_iam_role.step_function_role.name
+  policy_arn = aws_iam_policy.step_function_policy.arn
+}
+
+# Step function state machine
+resource "aws_sfn_state_machine" "scrape-pipeline-state-function" {
+  name     = "c13-lakshmibai-scrape-pipeline-step-function"
+  role_arn = aws_iam_role.step_function_role.arn
+  definition = jsonencode({
+    "Comment": "Step function to invoke the 3 scrape lambdas and the transform and load Lambda",
+    "StartAt": "Scrape",
+    "States": {
+      "Scrape": {
+        "Type": "Parallel",
+         "Branches": [ {
+          "StartAt": "steam scraper",
+          "States": {
+            "steam scraper": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::lambda:invoke",
+              "OutputPath": "$.Payload",
+              "Parameters": {
+                "Payload.$": "$",
+                "FunctionName": "arn:aws:lambda:eu-west-2:129033205317:function:c13-lakshmibai-steam-scraper-lambda:$LATEST"
+              },
+              "Retry": [
+                {
+                  "ErrorEquals": [
+                    "Lambda.ServiceException",
+                    "Lambda.AWSLambdaException",
+                    "Lambda.SdkClientException",
+                    "Lambda.TooManyRequestsException"
+                  ],
+                  "IntervalSeconds": 1,
+                  "MaxAttempts": 3,
+                  "BackoffRate": 2
+                }
+              ],
+              "End": true
+            }
+          }
+        },{
+          "StartAt": "gog scraper",
+          "States": {
+            "gog scraper": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::lambda:invoke",
+              "OutputPath": "$.Payload",
+              "Parameters": {
+                "Payload.$": "$",
+                "FunctionName": "arn:aws:lambda:eu-west-2:129033205317:function:c13-lakshmibai-gog-scraper-lambda:$LATEST"
+              },
+              "Retry": [
+                {
+                  "ErrorEquals": [
+                    "Lambda.ServiceException",
+                    "Lambda.AWSLambdaException",
+                    "Lambda.SdkClientException",
+                    "Lambda.TooManyRequestsException"
+                  ],
+                  "IntervalSeconds": 1,
+                  "MaxAttempts": 3,
+                  "BackoffRate": 2
+                }
+              ],
+              "End": true
+            }
+          }
+        },{
+          "StartAt": "epic scraper",
+          "States": {
+            "epic scraper": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::lambda:invoke",
+              "OutputPath": "$.Payload",
+              "Parameters": {
+                "Payload.$": "$", 
+                "FunctionName": "arn:aws:lambda:eu-west-2:129033205317:function:c13-lakshmibai-epic-scraper-lambda:$LATEST"
+              },
+              "Retry": [
+                {
+                  "ErrorEquals": [
+                    "Lambda.ServiceException",
+                    "Lambda.AWSLambdaException",
+                    "Lambda.SdkClientException",
+                    "Lambda.TooManyRequestsException"
+                  ],
+                  "IntervalSeconds": 1,
+                  "MaxAttempts": 3,
+                  "BackoffRate": 2
+                }
+              ],
+              "End": true
+            }
+          }
+        }
+        ],
+        "Next": "Transform_and_Load"
+      },
+      "Transform_and_Load": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::lambda:invoke",
+        "OutputPath": "$.Payload",
+        "Parameters": {
+          "Payload.$": "$",
+          "FunctionName": "arn:aws:lambda:eu-west-2:129033205317:function:c13-lakshmibai-transform-load-lambda:$LATEST"
+        },
+        "Retry": [
+          {
+            "ErrorEquals": [
+              "Lambda.ServiceException",
+              "Lambda.AWSLambdaException",
+              "Lambda.SdkClientException",
+              "Lambda.TooManyRequestsException"
+            ],
+            "IntervalSeconds": 1,
+            "MaxAttempts": 3,
+            "BackoffRate": 2
+          }
+        ],
+        "End": true
+      }
+    }
+  })
+}
+
 ### WEEKLY SCHEDULER
 
-data  "aws_iam_policy_document" "assume-weekly-schedule-role" {
+data  "aws_iam_policy_document" "assume-schedule-role" {
     statement {
         effect = "Allow"
         principals {
@@ -213,13 +403,15 @@ data  "aws_iam_policy_document" "assume-weekly-schedule-role" {
 }
 
 # Permissions for the role: invoking a lambda, passing the IAM role
-data  "aws_iam_policy_document" "weekly-schedule-permissions-policy" {
+data  "aws_iam_policy_document" "schedule-permissions-policy" {
     statement {
         effect = "Allow"
         resources = [
-                aws_lambda_function.report-lambda.arn
+                aws_lambda_function.report-lambda.arn,
+                aws_sfn_state_machine.scrape-pipeline-state-function.arn
             ]
         actions = [
+            "states:StartExecution",
             "lambda:InvokeFunction"
         ]
     }
@@ -236,16 +428,16 @@ data  "aws_iam_policy_document" "weekly-schedule-permissions-policy" {
 }
 
 # IAM role for scheduler
-resource "aws_iam_role" "iam_for_weekly_schedule" {
-    name               = "c13-lakshmibai-weekly-scheduler-role"
-    assume_role_policy = data.aws_iam_policy_document.assume-weekly-schedule-role.json
+resource "aws_iam_role" "iam_for_schedule" {
+    name               = "c13-lakshmibai-scheduler-role"
+    assume_role_policy = data.aws_iam_policy_document.assume-schedule-role.json
 }
 
 # Adding policies to role
-resource "aws_iam_role_policy" "weekly_schedule_role_policy" {
-  name   = "c13-lakshmibai-weekly-schedule-role-policy"
-  role   = aws_iam_role.iam_for_weekly_schedule.id
-  policy = data.aws_iam_policy_document.weekly-schedule-permissions-policy.json
+resource "aws_iam_role_policy" "schedule_role_policy" {
+  name   = "c13-lakshmibai-schedule-role-policy"
+  role   = aws_iam_role.iam_for_schedule.id
+  policy = data.aws_iam_policy_document.schedule-permissions-policy.json
 }
 
 # weekly schedule
@@ -259,8 +451,27 @@ resource "aws_scheduler_schedule" "weekly-schedule" {
 
     target {
         arn = aws_lambda_function.report-lambda.arn 
-        role_arn = aws_iam_role.iam_for_weekly_schedule.arn
+        role_arn = aws_iam_role.iam_for_schedule.arn
     }
 }
+
+
+### STEP FUNCTION SCHEDULER
+
+resource "aws_scheduler_schedule" "pipeline-schedule" {
+    name = "c13-lakshmibai-pipeline-schedule"
+    flexible_time_window {
+      mode = "OFF"
+    }
+    schedule_expression = "cron(0 */3 ? * * *)"
+    schedule_expression_timezone = "UTC+1"
+
+    target {
+        arn = aws_sfn_state_machine.scrape-pipeline-state-function.arn
+        role_arn = aws_iam_role.iam_for_schedule.arn
+    }
+}
+
+
 
 
