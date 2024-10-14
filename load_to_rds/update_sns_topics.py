@@ -5,12 +5,11 @@ from os import environ as ENV
 from boto3 import client
 from dotenv import load_dotenv
 
-from create_topic_message import create_text_message
+from create_topic_message import create_text_message, format_genre_text
 
 load_dotenv()
 
 # pylint: disable = C0103
-
 
 def get_games_by_genre(genre: str, scraped_data: list[dict]) -> list[dict]:
     """Given a genre, returns all games with that genre."""
@@ -73,5 +72,5 @@ def update_SNS_topics(scraped_data: list[dict]):
             sns.publish(
                 TopicArn=topic["topic_arn"],
                 Message=email_contents,
-                Subject=f"New {genre.title()} Games Released!!"
+                Subject=f"New {format_genre_text(genre)} Games Released!!"
             )
