@@ -1,11 +1,5 @@
-"""
-This page includes the functionality for users to subscribe
-and unsubscribe to email updates about game releases.
-"""
-
 import re
 from os import environ as ENV
-
 import psycopg2
 from boto3 import client
 import pandas as pd
@@ -13,44 +7,34 @@ import altair as alt
 import streamlit as st
 from dotenv import load_dotenv
 
-# Regex for validating email
-email_pattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
-
-st.set_page_config(layout="wide")
-
+# Load environment variables
 load_dotenv()
 
 # Initialize the boto3 SNS client
 sns_client = client('sns', region_name=ENV["REGION"])
 
+# Regex for validating email
+email_pattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
 
-def connect_rds():  # Initialize PostgreSQL connection
-    conn = psycopg2.connect(
+# Streamlit configuration
+st.set_page_config(layout="wide")
+
+def connect_rds():
+    """Initialize PostgreSQL connection."""
+    return psycopg2.connect(
         host=ENV["DB_HOST"],
         database=ENV["DB_NAME"],
         user=ENV["DB_USER"],
         password=ENV["DB_PASSWORD"],
         port=ENV["DB_PORT"]
     )
-    return conn
-
 
 def is_email_in_rds(email):
     """Check if the email is already subscribed to the weekly report."""
-    try:
-        conn = connect_rds()
-        if conn is not None:
-            cur = conn.cursor()
-            query = "SELECT sub_id FROM subscriber WHERE sub_email = %s;"
-            cur.execute(query, (email,))
-            result = cur.fetchone()
-            cur.close()
-            conn.close()
-            return result is not None
-    except Exception as e:
-        st.error(f"Error checking email in RDS: {e}")
-        return False
-
+    with connect_rds() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT sub_id FROM subscriber WHERE sub_email = %s;", (email,))
+            return cur.fetchone() is not None
 
 def add_subscriber_to_rds(name, email):
     """Insert subscriber name and email into the RDS database if not already present."""
@@ -58,22 +42,15 @@ def add_subscriber_to_rds(name, email):
         st.warning(f"{email} is already subscribed to the weekly report.")
         return
 
-    try:
-        conn = connect_rds()
-        cur = conn.cursor()
-        query = """
-        INSERT INTO subscriber (sub_name, sub_email)
-        VALUES (%s, %s)
-        ON CONFLICT (sub_email) DO NOTHING;
-        """
-        cur.execute(query, (name, email))
-        conn.commit()
-        cur.close()
-        conn.close()
-        st.success(f"{name} has been subscribed to the weekly report.")
-    except Exception as e:
-        st.error(f"Error adding subscriber to RDS: {e}")
-
+    with connect_rds() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+            INSERT INTO subscriber (sub_name, sub_email)
+            VALUES (%s, %s)
+            ON CONFLICT (sub_email) DO NOTHING;
+            """, (name, email))
+            conn.commit()
+            st.success(f"{name} has been subscribed to the weekly report.")
 
 def get_subscriber_counts(topic_startswith):
     """Get subscriber counts for all relevant topics."""
@@ -84,17 +61,12 @@ def get_subscriber_counts(topic_startswith):
     for topic in topic_arns:
         topic_arn = topic['TopicArn']
         if topic_startswith in topic_arn:
-            # Get subscription attributes for this topic
             attributes = sns_client.get_topic_attributes(TopicArn=topic_arn)
-            subscriber_count = int(
-                attributes['Attributes']['SubscriptionsConfirmed'])
-            topic_name = topic_arn.split(
-                ":")[-1].replace(topic_startswith + "-", "").title()
-            subscriber_data.append(
-                {'Topic': topic_name, 'Subscribers': subscriber_count})
+            subscriber_count = int(attributes['Attributes']['SubscriptionsConfirmed'])
+            topic_name = topic_arn.split(":")[-1].replace(topic_startswith + "-", "").title()
+            subscriber_data.append({'Topic': topic_name, 'Subscribers': subscriber_count})
 
     return pd.DataFrame(subscriber_data)
-
 
 def create_subscriber_chart(topic):
     """Creates a horizontal bar chart about subscriber counts to SNS topics."""
@@ -113,21 +85,6 @@ def create_subscriber_chart(topic):
 
     return chart
 
-
-def is_email_in_sns_topic(email, topic_arn):
-    """Check if the email is already subscribed to the given SNS topic."""
-    try:
-        subscriptions = sns_client.list_subscriptions_by_topic(
-            TopicArn=topic_arn)
-        for sub in subscriptions['Subscriptions']:
-            if sub['Endpoint'] == email:
-                return True
-        return False
-    except Exception as e:
-        st.error(f"Error checking SNS topic subscription: {e}")
-        return False
-
-
 def subscribe_user_to_topics(email, selected_genres):
     """Subscribe user to the selected SNS topics, checking for duplicates."""
     topic_prefix = "c13-games"
@@ -136,25 +93,20 @@ def subscribe_user_to_topics(email, selected_genres):
         response = sns_client.list_topics()
         topic_arn = None
 
-        # Find the ARN for the topic
         for topic in response['Topics']:
             if topic_name in topic['TopicArn']:
                 topic_arn = topic['TopicArn']
                 break
 
         if topic_arn:
-            if not is_email_in_sns_topic(email, topic_arn):
-                sns_client.subscribe(
-                    TopicArn=topic_arn,
-                    Protocol='email',
-                    Endpoint=email
-                )
-                st.success(f"Subscribed to {genre} topic.")
-            else:
-                st.warning(f"Already subscribed to {genre} topic.")
+            sns_client.subscribe(
+                TopicArn=topic_arn,
+                Protocol='email',
+                Endpoint=email
+            )
+            st.success(f"Successfully subscribed to {genre} topic. Check your email to confirm the subscription.")
         else:
-            st.warning(f"Topic {topic_name} not found.")
-
+            st.warning(f"Already subscribed to {genre} topic or topic not found.")
 
 def unsubscribe_user_from_topics(email, selected_genres):
     """Unsubscribe user from the selected SNS topics."""
@@ -164,43 +116,33 @@ def unsubscribe_user_from_topics(email, selected_genres):
         response = sns_client.list_topics()
         topic_arn = None
 
-        # Find the ARN for the topic
         for topic in response['Topics']:
             if topic_name in topic['TopicArn']:
                 topic_arn = topic['TopicArn']
                 break
 
         if topic_arn:
-            # Get subscriptions for this topic to find the subscription ARN
-            subscriptions = sns_client.list_subscriptions_by_topic(
-                TopicArn=topic_arn)
+            subscriptions = sns_client.list_subscriptions_by_topic(TopicArn=topic_arn)
             for sub in subscriptions['Subscriptions']:
                 if sub['Endpoint'] == email:
-                    sns_client.unsubscribe(
-                        SubscriptionArn=sub['SubscriptionArn'])
+                    sns_client.unsubscribe(SubscriptionArn=sub['SubscriptionArn'])
                     st.success(f"Unsubscribed from {genre} topic.")
                     break
-        else:
-            st.warning(f"Topic {topic_name} not found.")
-
 
 def remove_subscriber_from_rds(email):
     """Remove the subscriber from the RDS database."""
-    try:
-        conn = connect_rds()
-        cur = conn.cursor()
-        query = "DELETE FROM subscriber WHERE sub_email = %s;"
-        cur.execute(query, (email,))
-        conn.commit()
-        cur.close()
-        conn.close()
-        st.success(f"{email} has been unsubscribed from the weekly report.")
-    except Exception as e:
-        st.error(f"Error removing subscriber from RDS: {e}")
+    with connect_rds() as conn:
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM subscriber WHERE sub_email = %s;", (email,))
+            conn.commit()
+            st.success(f"{email} has been unsubscribed from the weekly report.")
 
+def is_email_in_sns_topic(email, topic_arn):
+    """Check if the email is already subscribed to the given SNS topic."""
+    subscriptions = sns_client.list_subscriptions_by_topic(TopicArn=topic_arn)
+    return any(sub['Endpoint'] == email for sub in subscriptions['Subscriptions'])
 
 st.title("Subscribe to Games Tracker")
-
 st.write("""Subscribe to stay updated! Select the types of content
           you're interested in, and we'll send you personalised email
           updates based on your preferences.""")
@@ -246,8 +188,7 @@ with cols[2]:
     multiplayer = st.checkbox("Multiplayer")
 
 # Get the selected genres
-selected_genres = [genre for genre, checked in genre_topics.items(
-) if st.session_state.get(checked)]
+selected_genres = [genre for genre, checked in genre_topics.items() if st.session_state.get(checked)]
 
 cols = st.columns([1, 2, 1])
 with cols[1]:
@@ -255,7 +196,6 @@ with cols[1]:
 
     # Name input field
     name = st.text_input("Enter your name:")
-
     email = st.text_input("Enter your email:")
 
     if st.button("Subscribe"):
@@ -267,18 +207,18 @@ with cols[1]:
                     st.warning("Please enter your name to subscribe.")
             if selected_genres:  # Subscribe to selected genres
                 subscribe_user_to_topics(email, selected_genres)
+                print(selected_genres)
+                print(email)
         else:
             st.warning("Please enter a valid email address.")
 
-    st.markdown("<small>* NSFW content is not included in emails.</small>",
-                unsafe_allow_html=True)
+    st.markdown("<small>* NSFW content is not included in emails.</small>", unsafe_allow_html=True)
 
 st.divider()
 
 cols = st.columns([0.5, 2, 0.5])
 with cols[1]:
-    st.altair_chart(create_subscriber_chart(
-        "c13-games"), use_container_width=True)
+    st.altair_chart(create_subscriber_chart("c13-games"), use_container_width=True)
 
 st.divider()
 
@@ -286,21 +226,11 @@ cols = st.columns([1, 2, 1])
 with cols[1]:
     unsubscribe_expander = st.expander("Unsubscribe", expanded=False)
 
-    unsubscribe_email = unsubscribe_expander.text_input(
-        "Enter your email:", key="unsubscribe")
+    unsubscribe_email = unsubscribe_expander.text_input("Enter your email:", key="unsubscribe")
 
     if unsubscribe_expander.button("Unsubscribe"):
         if re.match(email_pattern, unsubscribe_email):
-            # Remove the subscriber from RDS
             remove_subscriber_from_rds(unsubscribe_email)
-
-            # Unsubscribe from SNS topics
-            # Get all genres
-            selected_genres = [genre for genre in genre_topics.values()]
             unsubscribe_user_from_topics(unsubscribe_email, selected_genres)
-
-            # Show a confirmation message
-            unsubscribe_expander.success(
-                f"You have successfully unsubscribed from updates, including any genres.")
         else:
-            unsubscribe_expander.warning("Please enter a valid email address.")
+            st.warning("Please enter a valid email address.")
