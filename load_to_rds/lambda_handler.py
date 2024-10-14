@@ -3,6 +3,7 @@
 from json import load
 
 from upload_to_db import load_to_db
+from update_sns_topics import update_SNS_topics
 
 
 def lambda_handler(event, session):
@@ -13,3 +14,4 @@ def lambda_handler(event, session):
                     for output in event]
 
     load_to_db(scraped_data)
+    update_SNS_topics(scraped_data)

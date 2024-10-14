@@ -43,20 +43,4 @@ def create_topics(genres: list) -> list[dict]:
 
 if __name__ == "__main__":
 
-    topics = create_topics(GENRES)
-
-    sns = client(service_name="sns",
-                 aws_access_key_id=ENV["AWS_ACCESS_KEY"],
-                 aws_secret_access_key=ENV["AWS_SECRET_ACCESS_KEY"])
-
-    emails = ["trainee.leon.simpson@sigmalabs.co.uk",
-              "trainee.paula.uusnakki@sigmalabs.co.uk",
-              "trainee.michael.hassan@sigmalabs.co.uk",
-              "trainee.mehrdad.halali@sigmalabs.co.uk"]
-
-    for topic in topics:
-        for email in emails:
-            sns.subscribe(
-                TopicArn=topic["topic_arn"],
-                Protocol='email',
-                Endpoint=email)
+    create_topics(GENRES)

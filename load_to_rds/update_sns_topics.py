@@ -1,13 +1,11 @@
 """This script is for updating the SNS topics with the right HTML messages."""
 
-from json import load
 from os import environ as ENV
 
 from boto3 import client
 from dotenv import load_dotenv
 
-from create_sns_topics import create_topics
-from create_ugly_topic_message import create_ugly_disgusting_message_i_hate_it
+from create_topic_message import create_text_message
 
 load_dotenv()
 
@@ -26,8 +24,36 @@ def get_games_by_genre(genre: str, scraped_data: list[dict]) -> list[dict]:
     return genre_games
 
 
-def update_SNS_topics(topics: list[dict],
-                      scraped_data: list[dict]):
+def create_SNS_topic_object(topic_arn: str) -> dict:
+    """Given an ARN, returns a dictionary containing a topic's genre as well."""
+
+    return {
+        "topic_arn": topic_arn,
+        "genre": topic_arn.split(":")[-1].split("-")[-1]
+    }
+
+
+def get_SNS_topics() -> list[dict]:
+    """Returns all of the SNS topics from AWS."""
+
+    sns = client(service_name="sns",
+                 aws_access_key_id=ENV["AWS_ACCESS_KEY"],
+                 aws_secret_access_key=ENV["AWS_SECRET_ACCESS_KEY"])
+
+    all_sns_topics = sns.list_topics()["Topics"]
+
+    games_sns_topics = [topic
+                        for topic in all_sns_topics
+                        if ENV["SNS_TOPIC_PREFIX"] in topic["TopicArn"]]
+
+    return [create_SNS_topic_object(topic["TopicArn"])
+            for topic in games_sns_topics]
+
+
+def update_SNS_topics(scraped_data: list[dict]):
+    """Updates the SNS topics with the right messages."""
+
+    topics = get_SNS_topics()
 
     sns = client(service_name="sns",
                  aws_access_key_id=ENV["AWS_ACCESS_KEY"],
@@ -39,7 +65,7 @@ def update_SNS_topics(topics: list[dict],
         games_of_genre = get_games_by_genre(genre, scraped_data)
 
         if len(games_of_genre) > 0:
-            email_contents = create_ugly_disgusting_message_i_hate_it(
+            email_contents = create_text_message(
                 games_of_genre, genre)
 
             sns.publish(
@@ -49,15 +75,4 @@ def update_SNS_topics(topics: list[dict],
             )
 
 
-if __name__ == "__main__":
 
-    with open("topics.json", "r") as f:
-        topics = load(f)
-
-    with open("gog_data.json", "r") as f:
-        gog_games = load(f)
-
-    with open("steam_data.json", "r") as f:
-        steam_games = load(f)
-
-    update_SNS_topics(topics, [gog_games, steam_games])
