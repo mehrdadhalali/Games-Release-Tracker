@@ -1,6 +1,6 @@
-"""Turns out SNS doesn't support HTML, this is a placeholder script to just format the messages in a readable way."""
+"""Creates the message that gets emailed to subscribers."""
 
-from json import load
+# pylint: disable=C0209
 
 
 def format_price(price: int) -> str:
@@ -9,7 +9,7 @@ def format_price(price: int) -> str:
     if price == 0:
         return "FREE"
 
-    return "£" + "%.2f" % (price/100)
+    return f"£{"%.2f" % (price/100)}"
 
 
 def create_text_message(games: list[dict], genre: str):
@@ -23,3 +23,7 @@ def create_text_message(games: list[dict], genre: str):
             available on {game["url"]}\n\n"""
 
     return message
+
+
+if __name__ == "__main__":
+    print(format_price(1350))

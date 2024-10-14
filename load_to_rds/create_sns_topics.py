@@ -1,7 +1,6 @@
 """This script is for creating SNS topics for each genre."""
 
 from os import environ as ENV
-from json import dump
 
 from boto3 import client
 from dotenv import load_dotenv

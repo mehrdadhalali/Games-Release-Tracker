@@ -9,6 +9,8 @@ from create_topic_message import create_text_message
 
 load_dotenv()
 
+# pylint: disable = C0103
+
 
 def get_games_by_genre(genre: str, scraped_data: list[dict]) -> list[dict]:
     """Given a genre, returns all games with that genre."""
@@ -73,6 +75,3 @@ def update_SNS_topics(scraped_data: list[dict]):
                 Message=email_contents,
                 Subject=f"New {genre} Games Released!!"
             )
-
-
-

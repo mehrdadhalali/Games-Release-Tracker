@@ -1,6 +1,5 @@
 """This script is for uploading the listings to the database."""
 
-from json import load
 from datetime import datetime
 
 from psycopg2.extensions import connection
@@ -149,8 +148,3 @@ def load_to_db(all_scraped_data: list):
         upload_all_listings_to_database(dataset, maps, conn)
 
     conn.close()
-
-
-if __name__ == "__main__":
-
-    load_to_db()

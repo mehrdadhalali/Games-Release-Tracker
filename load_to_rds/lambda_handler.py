@@ -1,9 +1,9 @@
 """The script that gets called from the lambda."""
 
-from json import load
-
 from upload_to_db import load_to_db
 from update_sns_topics import update_SNS_topics
+
+# pylint: disable=W0613
 
 
 def lambda_handler(event, session):
