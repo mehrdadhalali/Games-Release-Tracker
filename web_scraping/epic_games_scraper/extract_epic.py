@@ -80,6 +80,7 @@ def parse_listing(listing: dict) -> dict:
         "release_date": format_release_date(listing["releaseDate"]),
         "operating_systems": get_operating_systems(listing['tags']),
         "genres": get_genres(listing['tags']),
+        "is_nsfw": False,  # Epic Games do not allow NSFW listings.
         "tags": get_features(listing['tags']),
         "current_price": listing["currentPrice"],
         "url": get_game_url(listing['mappings']),
