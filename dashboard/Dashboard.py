@@ -87,7 +87,7 @@ if __name__ == "__main__":
         "<style>.line { border: 0.5px solid; margin: 0; }</style><div class='line'></div>",
         unsafe_allow_html=True)
 
-    cols = st.columns(2)
+    cols = st.columns([2, 3])
     with cols[0]:
         st.altair_chart(create_donut_chart(), use_container_width=True)
     with cols[1]:

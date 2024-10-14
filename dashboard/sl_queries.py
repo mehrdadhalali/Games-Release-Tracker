@@ -61,9 +61,9 @@ def get_game_data(show_nsfw, start_date, end_date, os_selection, search_query=""
 
     # Add search term filter if provided
     if search_query:
-        query += " AND (g.game_title ILIKE %s OR ge.genre_name ILIKE %s)"
+        query += " AND (g.game_title ILIKE %s OR ge.genre_name ILIKE %s OR p.platform_name ILIKE %s)"
         search_param = f"%{search_query}%"
-        params.extend([search_param, search_param])
+        params.extend([search_param, search_param, search_param])
 
     query += """
     GROUP BY g.game_title, g.release_date, p.platform_name, gl.release_price, gl.listing_url
