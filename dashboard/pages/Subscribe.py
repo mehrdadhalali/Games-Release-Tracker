@@ -156,6 +156,49 @@ def subscribe_user_to_topics(email, selected_genres):
             st.warning(f"Topic {topic_name} not found.")
 
 
+def unsubscribe_user_from_topics(email, selected_genres):
+    """Unsubscribe user from the selected SNS topics."""
+    topic_prefix = "c13-games"
+    for genre in selected_genres:
+        topic_name = f"{topic_prefix}-{genre.lower()}"
+        response = sns_client.list_topics()
+        topic_arn = None
+
+        # Find the ARN for the topic
+        for topic in response['Topics']:
+            if topic_name in topic['TopicArn']:
+                topic_arn = topic['TopicArn']
+                break
+
+        if topic_arn:
+            # Get subscriptions for this topic to find the subscription ARN
+            subscriptions = sns_client.list_subscriptions_by_topic(
+                TopicArn=topic_arn)
+            for sub in subscriptions['Subscriptions']:
+                if sub['Endpoint'] == email:
+                    sns_client.unsubscribe(
+                        SubscriptionArn=sub['SubscriptionArn'])
+                    st.success(f"Unsubscribed from {genre} topic.")
+                    break
+        else:
+            st.warning(f"Topic {topic_name} not found.")
+
+
+def remove_subscriber_from_rds(email):
+    """Remove the subscriber from the RDS database."""
+    try:
+        conn = connect_rds()
+        cur = conn.cursor()
+        query = "DELETE FROM subscriber WHERE sub_email = %s;"
+        cur.execute(query, (email,))
+        conn.commit()
+        cur.close()
+        conn.close()
+        st.success(f"{email} has been unsubscribed from the weekly report.")
+    except Exception as e:
+        st.error(f"Error removing subscriber from RDS: {e}")
+
+
 st.title("Subscribe to Games Tracker")
 
 st.write("""Subscribe to stay updated! Select the types of content
@@ -248,7 +291,16 @@ with cols[1]:
 
     if unsubscribe_expander.button("Unsubscribe"):
         if re.match(email_pattern, unsubscribe_email):
+            # Remove the subscriber from RDS
+            remove_subscriber_from_rds(unsubscribe_email)
+
+            # Unsubscribe from SNS topics
+            # Get all genres
+            selected_genres = [genre for genre in genre_topics.values()]
+            unsubscribe_user_from_topics(unsubscribe_email, selected_genres)
+
+            # Show a confirmation message
             unsubscribe_expander.success(
-                f"You have unsubscribed {unsubscribe_email}.")
+                f"You have successfully unsubscribed from updates, including any genres.")
         else:
             unsubscribe_expander.warning("Please enter a valid email address.")
