@@ -1,6 +1,5 @@
 """This script is for uploading the listings to the database."""
 
-from json import loads
 from datetime import datetime
 
 from psycopg2.extensions import connection
@@ -17,14 +16,14 @@ def get_today() -> datetime:
     return datetime(now.year, now.month, now.day)
 
 
-def remove_duplicates(listings_list: list[dict], already_scraped: list[str]) -> list[dict]:
+def remove_duplicates(scraped_data: list[dict], already_scraped: list[str]) -> list[dict]:
     """Removes any game that is already scraped."""
 
-    for listings in listings_list:
+    for listings in scraped_data:
         listings["listings"] = [game for game in listings["listings"]
                                 if game["url"] not in already_scraped]
 
-    return listings_list
+    return scraped_data
 
 
 def update_genres(new_genres: list[str], conn: connection) -> dict:
@@ -149,8 +148,3 @@ def load_to_db(all_scraped_data: list):
         upload_all_listings_to_database(dataset, maps, conn)
 
     conn.close()
-
-
-if __name__ == "__main__":
-
-    load_to_db()
