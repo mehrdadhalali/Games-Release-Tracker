@@ -115,6 +115,12 @@ def scrape_game_tags(app_soup: bs4.BeautifulSoup) -> list[str]:
     return tags if tags else []
 
 
+def scrape_game_nsfw(app_soup: bs4.BeautifulSoup) -> bool:
+    """Returns True if a game is tagged as NSFW."""
+    headings = [heading.text.lower() for heading in app_soup.find_all('h2')]
+    return any('mature content' in heading for heading in headings)
+
+
 def scrape_game_genres(app_soup: bs4.BeautifulSoup) -> list[str]:
     """Scrapes a game's Steam app page for genres."""
     genres_section = app_soup.find('div', id='genresAndManufacturer')
@@ -157,6 +163,7 @@ def parse_game_listing(game_listing: bs4.Tag) -> dict:
         'release_date': datetime.strftime(parse_release_date(game_listing), '%d/%m/%Y'),
         'operating_systems': scrape_game_operating_systems(app_soup),
         'genres': scrape_game_genres(app_soup),
+        'is_nsfw': scrape_game_nsfw(app_soup),
         'tags': scrape_game_tags(app_soup),
         'current_price': parse_price(game_listing),
         'url': parse_game_url(game_listing),
