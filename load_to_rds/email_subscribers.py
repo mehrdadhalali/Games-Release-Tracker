@@ -6,19 +6,10 @@ from json import load
 from boto3 import client
 from dotenv import load_dotenv
 
-from create_html_message import create_html
+from create_html_message import create_html, format_genre_text
 from get_subscriber_emails import get_subscribers_per_genre
 
 load_dotenv()
-
-
-def format_genre_text(genre: str) -> str:
-    """Makes genre representable in an email."""
-
-    if genre.lower() == "rpg":
-        return "RPG"
-
-    return genre.title()
 
 
 def get_games_by_genre(genre: str, scraped_data: list[dict]) -> list[dict]:
