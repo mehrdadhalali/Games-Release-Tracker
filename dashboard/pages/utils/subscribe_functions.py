@@ -120,33 +120,40 @@ def subscribe_user_to_topics(email, selected_genres):
             st.warning(f"Already subscribed to {genre}.")
 
 
+def get_sns_topics_with_prefix(prefix):
+    """Return all SNS topics that start with the given prefix."""
+    response = sns_client.list_topics()
+    return [topic['TopicArn'] for topic in response['Topics'] if prefix in topic['TopicArn']]
+
+
+def get_user_subscriptions_for_topic(topic_arn, email):
+    """Return the subscription ARN if the user is subscribed to the topic."""
+    subscriptions = sns_client.list_subscriptions_by_topic(TopicArn=topic_arn)
+    for sub in subscriptions['Subscriptions']:
+        if sub['Endpoint'] == email and sub['SubscriptionArn'].startswith("arn:aws:sns"):
+            return sub['SubscriptionArn']
+    return None
+
+
+def unsubscribe_user_from_topic(subscription_arn):
+    """Unsubscribe user from the topic using the subscription ARN."""
+    sns_client.unsubscribe(SubscriptionArn=subscription_arn)
+
+
 def unsubscribe_user_from_all_topics(email):
     """Unsubscribe user from all SNS topics that start with 'c13-games'."""
     topic_prefix = "c13-games"
     unsubscribed_topics = []
 
-    response = sns_client.list_topics()  # Get all topics
+    topics = get_sns_topics_with_prefix(topic_prefix)
 
-    # Iterate over all topics starting with 'c13-games'
-    for topic in response['Topics']:
-        topic_arn = topic['TopicArn']
-        if topic_prefix in topic_arn:
-            # Get all subscriptions for this topic
-            subscriptions = sns_client.list_subscriptions_by_topic(
-                TopicArn=topic_arn)
+    for topic_arn in topics:
+        subscription_arn = get_user_subscriptions_for_topic(topic_arn, email)
+        if subscription_arn:
+            unsubscribe_user_from_topic(subscription_arn)
+            unsubscribed_topics.append(topic_arn.split(
+                ":")[-1].replace(topic_prefix + "-", "").title())
 
-            # Unsubscribe the user from this topic if they are subscribed
-            for sub in subscriptions['Subscriptions']:
-                if sub['Endpoint'] == email:
-                    subscription_arn = sub['SubscriptionArn']
-                    # Unsubscribe from both confirmed and pending subscriptions
-                    if subscription_arn and subscription_arn.startswith("arn:aws:sns"):
-                        sns_client.unsubscribe(
-                            SubscriptionArn=subscription_arn)
-                        unsubscribed_topics.append(topic_arn.split(
-                            ":")[-1].replace(topic_prefix + "-", "").title())
-
-    # Display success message for all unsubscribed topics
     if unsubscribed_topics:
         st.success(f"Unsubscribed from the following topics: {
                    ', '.join(unsubscribed_topics)}.")
