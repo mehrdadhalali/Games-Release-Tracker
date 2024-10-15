@@ -1,14 +1,20 @@
 """This is the script for the Streamlit app's Subscribe page."""
 
 import re
+from os import environ as ENV
 
+from boto3 import client
 import streamlit as st
+from dotenv import load_dotenv
 
 from pages.utils.subscribe_functions import (add_subscriber_to_rds, create_subscriber_chart,
                                              subscribe_user_to_topics, remove_subscriber_from_rds,
                                              unsubscribe_user_from_all_topics)
 
 EMAIL_PATTERN = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+
+load_dotenv()
+SNS_CLIENT = client('sns', region_name=ENV["REGION"])
 
 st.set_page_config(layout="wide")
 
@@ -69,7 +75,7 @@ with cols[1]:
                 else:
                     st.warning("Please enter your name to subscribe.")
             if selected_genres:  # Subscribe to selected genres
-                subscribe_user_to_topics(email, selected_genres)
+                subscribe_user_to_topics(SNS_CLIENT, email, selected_genres)
         else:
             st.warning("Please enter a valid email address.")
 
@@ -81,7 +87,7 @@ st.divider()
 cols = st.columns([0.5, 2, 0.5])
 with cols[1]:
     st.altair_chart(create_subscriber_chart(
-        "c13-games"), use_container_width=True)
+        SNS_CLIENT, "c13-games"), use_container_width=True)
 
 st.divider()
 
@@ -95,6 +101,6 @@ with cols[1]:
     if unsubscribe_expander.button("Unsubscribe"):
         if re.match(EMAIL_PATTERN, unsubscribe_email):
             remove_subscriber_from_rds(unsubscribe_email)
-            unsubscribe_user_from_all_topics(unsubscribe_email)
+            unsubscribe_user_from_all_topics(SNS_CLIENT, unsubscribe_email)
         else:
             st.warning("Please enter a valid email address.")

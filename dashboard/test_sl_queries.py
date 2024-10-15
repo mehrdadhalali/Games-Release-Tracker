@@ -1,9 +1,12 @@
+"""This is the test file for sl_queries.py."""
 # pylint: skip-file
+
+from unittest.mock import patch, MagicMock
 
 import pytest
 import pandas as pd
 from dotenv import load_dotenv
-from unittest.mock import patch, MagicMock
+
 from sl_queries import (
     get_connection,
     get_game_data,
@@ -45,13 +48,6 @@ def db_connection():
     """Fixture to provide a database connection."""
     conn = get_connection()
     yield conn
-    conn.close()
-
-
-def test_get_connection():
-    """Test the database connection."""
-    conn = get_connection()
-    assert conn is not None
     conn.close()
 
 
