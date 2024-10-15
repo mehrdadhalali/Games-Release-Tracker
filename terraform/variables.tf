@@ -33,6 +33,11 @@ variable "DB_PORT" {
   
 }
 
+variable "DB_PORT_S" {
+    type = string
+  
+}
+
 variable "AWS_ACCOUNT_ID" {
     type = number
   
@@ -59,6 +64,36 @@ variable "SUBNET_NAME" {
 }
 
 variable "VPC_ID" {
+    type = string
+  
+}
+
+variable "GOG_ECR" {
+    type = string
+  
+}
+
+variable "STEAM_ECR" {
+    type = string
+  
+}
+
+variable "EPIC_ECR" {
+    type = string
+  
+}
+
+variable "REPORT_ECR" {
+    type = string
+  
+}
+
+variable "tf_ECR" {
+    type = string
+  
+}
+
+variable "DASHBOARD_ECR" {
     type = string
   
 }

@@ -8,7 +8,6 @@ provider "aws" {
     
 }
 
-
 ### SET UP POSTGRES RDS
 
 # gets subnet group
@@ -113,27 +112,27 @@ resource "aws_iam_role_policy" "lambda_role_policy" {
 
 # ECR's
 data "aws_ecr_image" "gog-scraper-image" {
-  repository_name = "c13-lakshmibai-gog-scraper"
+  repository_name = var.GOG_ECR
   image_tag       = "latest"
 }
 
 data "aws_ecr_image" "steam-scraper-image" {
-  repository_name = "c13-lakshmibai-steam-scraper"
+  repository_name = var.STEAM_ECR
   image_tag       = "latest"
 }
 
 data "aws_ecr_image" "epic-scraper-image" {
-  repository_name = "c13-lakshmibai-epic-extract"
+  repository_name = var.EPIC_ECR
   image_tag       = "latest"
 }
 
 data "aws_ecr_image" "report-image" {
-  repository_name = "c13-lakshmibai-report-summary"
+  repository_name = var.REPORT_ECR
   image_tag       = "latest"
 }
 
 data "aws_ecr_image" "transform-image" {
-  repository_name = "c13-lakshmibai-transform-load"
+  repository_name = var.tf_ECR
   image_tag       = "latest"
 }
 
@@ -492,7 +491,7 @@ data "aws_iam_role" "iam_for_task_def" {
 
 # ECR with dashboard image
 data "aws_ecr_image" "dashboard_image" {
-  repository_name = "c13-lakshmibai-dashboard"
+  repository_name = var.DASHBOARD_ECR
   image_tag       = "latest"
 }
 
@@ -534,7 +533,7 @@ resource "aws_ecs_task_definition" "dashboard_task_definition" {
         },
         {
             name="DB_PORT"
-            value="5432"
+            value=var.DB_PORT_S
         },
         {
             name="REGION"
