@@ -1,6 +1,7 @@
 """This is the test file for subscribe_functions.py."""
 
 from unittest.mock import patch, MagicMock
+import os
 
 import pytest
 import pandas as pd
@@ -32,6 +33,12 @@ def mock_sns_client():
     """Mocks the SNS client."""
     with patch("subscribe_functions.sns_client") as mock:
         yield mock
+
+
+@pytest.fixture(autouse=True)
+def set_env_vars():
+    with patch.dict(os.environ, {"REGION": "eu-west-2"}):
+        yield
 
 
 def test_is_email_in_rds(mock_connect_rds):
