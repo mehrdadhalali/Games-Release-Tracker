@@ -44,10 +44,3 @@ def create_html(games: list[dict], genre: str) -> str:
         message += put_in_tag(game["description"], "p")
     message = put_in_tag(put_in_tag(message, "body"), "html")
     return message
-
-
-if __name__ == "__main__":
-    with open("steam-13-10-24.json", "r") as f:
-        games = load(f)
-    with open("message_html.html", "w") as f:
-        f.write(create_html(games["listings"], "Cool"))

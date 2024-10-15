@@ -5,8 +5,6 @@ from os import environ as ENV
 from boto3 import client
 from dotenv import load_dotenv
 
-from create_topic_message import create_text_message
-
 load_dotenv()
 
 # pylint: disable = C0103
@@ -60,7 +58,3 @@ def get_subscribers_per_genre() -> list[dict]:
 
     return subscribers_per_genre
 
-
-if __name__ == "__main__":
-
-    print(get_subscribers_per_genre())
