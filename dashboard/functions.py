@@ -95,8 +95,8 @@ def display_game_table(show_nsfw, os_selection, start_date, end_date, search_que
 
     # Add clickable links to game names
     table_data['Title'] = table_data.apply(
-        lambda row: f'<a href="{row["listing_url"]
-                                }" target="_blank">{row["Title"]}</a>',
+        lambda row: f"""<a href="{row["listing_url"]
+                                  }" target="_blank">{row["Title"]}</a>""",
         axis=1
     )
 

@@ -473,5 +473,133 @@ resource "aws_scheduler_schedule" "pipeline-schedule" {
 }
 
 
+### DASHBOARD 
+
+# A public subnet
+data "aws_subnet" "c13-public-subnet" {
+  id = "subnet-0f5e0c5f66f561ab0"
+}
+
+# The cluster we will run tasks on
+data "aws_ecs_cluster" "c13-cluster" {
+    cluster_name = "c13-ecs-cluster"
+}
+
+# IAM role for running ECS task 
+data "aws_iam_role" "iam_for_task_def" {
+  name = "ecsTaskExecutionRole"
+}
+
+# ECR with dashboard image
+data "aws_ecr_image" "dashboard_image" {
+  repository_name = "c13-lakshmibai-dashboard"
+  image_tag       = "latest"
+}
+
+# Task definition
+resource "aws_ecs_task_definition" "dashboard_task_definition" {
+  family = "c13-lakshmibai-task-def"
+  requires_compatibilities = ["FARGATE"]
+  network_mode             = "awsvpc"
+  execution_role_arn = data.aws_iam_role.iam_for_task_def.arn
+  cpu       = 512
+  memory    = 1024
+  container_definitions = jsonencode([
+    {
+      name      = "c13-lakshmibai-dashboard"
+      image     = data.aws_ecr_image.dashboard_image.image_uri
+      essential = true
+      portMappings = [
+        {
+          containerPort = 8501
+          hostPort      = 8501
+        }
+      ]
+      environment = [
+        {
+            name="DB_NAME"
+            value=var.DB_NAME
+        },
+        {
+            name="DB_HOST"
+            value=var.DB_HOST
+        },
+        {
+            name="DB_USER"
+            value=var.DB_USER
+        },
+        {
+            name="DB_PASSWORD"
+            value=var.DB_PASSWORD
+        },
+        {
+            name="DB_PORT"
+            value="5432"
+        },
+        {
+            name="REGION"
+            value=var.AWS_REGION
+        },
+        {
+            name="AWS_ACCESS_KEY"
+            value=var.AWS_ACCESS_KEY
+        },
+        {
+            name="AWS_SECRET_KEY"
+            value=var.AWS_SECRET_KEY
+        },
+
+      ]
+     logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+        awslogs-group         = "/ecs/c13-lakshmibai-dashboard"
+        mode                  = "non-blocking"
+        awslogs-create-group  = "true"
+        max-buffer-size       = "25m"
+        awslogs-region        = "eu-west-2"
+        awslogs-stream-prefix = "ecs"
+      }
+    }
+    }])
+}
+
+
+resource "aws_security_group" "dashboard_security_group" {
+  name        = "c13-lakshmibai-dashboard-sg"
+  description = "Allow TCP traffic on port 8501"
+  vpc_id      = var.VPC_ID
+
+  ingress {
+    description      = "Allow TCP traffic on port 8501"
+    from_port        = 8501
+    to_port          = 8501
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"]
+  }
+
+  egress {
+    description = "Allow all outbound traffic"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+# ECS Service for dashboard
+resource "aws_ecs_service" "dashboard_service" {
+  name            = "c13-lakshmibai-dashboard-service"
+  cluster         = data.aws_ecs_cluster.c13-cluster.id
+  task_definition = aws_ecs_task_definition.dashboard_task_definition.arn
+  desired_count   = 1
+  launch_type     = "FARGATE"
+  network_configuration {
+    subnets          = [data.aws_subnet.c13-public-subnet.id]
+    security_groups  = [aws_security_group.dashboard_security_group.id]
+    assign_public_ip = true
+  }
+}
+
 
 
