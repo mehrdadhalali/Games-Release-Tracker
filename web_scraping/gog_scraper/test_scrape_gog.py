@@ -13,7 +13,6 @@ from scrape_gog_game import format_os, format_price
                           ("MAC OS X (10.12+)", ["Mac"]),
                           ("Windows (10, 11), Linux (Ubuntu 20.04, Ubuntu 22.04), Mac OS X (10.12+)", ["Windows", "Mac", "Linux"])])
 def test_format_os(os_string, os):
-
     assert format_os(os_string) == os
 
 
@@ -24,5 +23,4 @@ def test_format_os(os_string, os):
                           ("frEe", 0),
                           ("1.00", 100)])
 def test_format_price(price_str, price):
-
     assert format_price(price_str) == price
