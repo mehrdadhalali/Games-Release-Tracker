@@ -4,7 +4,9 @@ import re
 
 import streamlit as st
 
-from pages.utils.subscribe_functions import add_subscriber_to_rds, create_subscriber_chart, subscribe_user_to_topics, remove_subscriber_from_rds, unsubscribe_user_from_all_topics
+from pages.utils.subscribe_functions import (add_subscriber_to_rds, create_subscriber_chart,
+                                             subscribe_user_to_topics, remove_subscriber_from_rds,
+                                             unsubscribe_user_from_all_topics)
 
 EMAIL_PATTERN = r'^[\w\.-]+@[\w\.-]+\.\w+$'
 
