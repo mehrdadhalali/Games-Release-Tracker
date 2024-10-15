@@ -3,16 +3,9 @@
 from os import environ as ENV
 
 import psycopg2
-import boto3
 import pandas as pd
 import altair as alt
 import streamlit as st
-from dotenv import load_dotenv
-
-
-load_dotenv()
-
-sns_client = boto3.client('sns', region_name=ENV["REGION"])
 
 def connect_rds():
     """Initialize PostgreSQL connection."""
@@ -51,16 +44,16 @@ def add_subscriber_to_rds(name, email):
             st.success(f"{name} has been subscribed to the weekly report.")
 
 
-def get_subscriber_counts(topic_startswith):
+def get_subscriber_counts(client, topic_startswith):
     """Get subscriber counts for all relevant topics."""
-    response = sns_client.list_topics()
+    response = client.list_topics()
     topic_arns = response['Topics']
 
     subscriber_data = []
     for topic in topic_arns:
         topic_arn = topic['TopicArn']
         if topic_startswith in topic_arn:
-            attributes = sns_client.get_topic_attributes(TopicArn=topic_arn)
+            attributes = client.get_topic_attributes(TopicArn=topic_arn)
             subscriber_count = int(
                 attributes['Attributes']['SubscriptionsConfirmed'])
             topic_name = topic_arn.split(
@@ -71,9 +64,9 @@ def get_subscriber_counts(topic_startswith):
     return pd.DataFrame(subscriber_data)
 
 
-def create_subscriber_chart(topic):
+def create_subscriber_chart(client, topic):
     """Creates a horizontal bar chart about subscriber counts to SNS topics."""
-    data = get_subscriber_counts(topic)
+    data = get_subscriber_counts(client, topic)
 
     chart = alt.Chart(data).mark_bar(color="#6a0dad").encode(
         x=alt.X('Subscribers:Q', axis=alt.Axis(format='d')),
@@ -89,18 +82,18 @@ def create_subscriber_chart(topic):
     return chart
 
 
-def is_email_in_sns_topic(email, topic_arn):
+def is_email_in_sns_topic(client, email, topic_arn):
     """Check if the email is already subscribed to the given SNS topic."""
-    subscriptions = sns_client.list_subscriptions_by_topic(TopicArn=topic_arn)
+    subscriptions = client.list_subscriptions_by_topic(TopicArn=topic_arn)
     return any(sub['Endpoint'] == email for sub in subscriptions['Subscriptions'])
 
 
-def subscribe_user_to_topics(email, selected_genres):
+def subscribe_user_to_topics(client, email, selected_genres):
     """Subscribe user to the selected SNS topics, checking for duplicates."""
     topic_prefix = "c13-games"
     for genre in selected_genres:
         topic_name = f"{topic_prefix}-{genre.lower()}"
-        response = sns_client.list_topics()
+        response = client.list_topics()
         topic_arn = None
 
         for topic in response['Topics']:
@@ -108,8 +101,8 @@ def subscribe_user_to_topics(email, selected_genres):
                 topic_arn = topic['TopicArn']
                 break
 
-        if topic_arn and not is_email_in_sns_topic(email, topic_arn):
-            sns_client.subscribe(
+        if topic_arn and not is_email_in_sns_topic(client, email, topic_arn):
+            client.subscribe(
                 TopicArn=topic_arn,
                 Protocol='email',
                 Endpoint=email
@@ -120,37 +113,37 @@ def subscribe_user_to_topics(email, selected_genres):
             st.warning(f"Already subscribed to {genre}.")
 
 
-def get_sns_topics_with_prefix(prefix):
+def get_sns_topics_with_prefix(client, prefix):
     """Return all SNS topics that start with the given prefix."""
-    response = sns_client.list_topics()
+    response = client.list_topics()
     return [topic['TopicArn'] for topic in response['Topics'] if prefix in topic['TopicArn']]
 
 
-def get_user_subscriptions_for_topic(topic_arn, email):
+def get_user_subscriptions_for_topic(client, topic_arn, email):
     """Return the subscription ARN if the user is subscribed to the topic."""
-    subscriptions = sns_client.list_subscriptions_by_topic(TopicArn=topic_arn)
+    subscriptions = client.list_subscriptions_by_topic(TopicArn=topic_arn)
     for sub in subscriptions['Subscriptions']:
         if sub['Endpoint'] == email and sub['SubscriptionArn'].startswith("arn:aws:sns"):
             return sub['SubscriptionArn']
     return None
 
 
-def unsubscribe_user_from_topic(subscription_arn):
+def unsubscribe_user_from_topic(client, subscription_arn):
     """Unsubscribe user from the topic using the subscription ARN."""
-    sns_client.unsubscribe(SubscriptionArn=subscription_arn)
+    client.unsubscribe(SubscriptionArn=subscription_arn)
 
 
-def unsubscribe_user_from_all_topics(email):
+def unsubscribe_user_from_all_topics(client, email):
     """Unsubscribe user from all SNS topics that start with 'c13-games'."""
     topic_prefix = "c13-games"
     unsubscribed_topics = []
 
-    topics = get_sns_topics_with_prefix(topic_prefix)
+    topics = get_sns_topics_with_prefix(client, topic_prefix)
 
     for topic_arn in topics:
-        subscription_arn = get_user_subscriptions_for_topic(topic_arn, email)
+        subscription_arn = get_user_subscriptions_for_topic(client, topic_arn, email)
         if subscription_arn:
-            unsubscribe_user_from_topic(subscription_arn)
+            unsubscribe_user_from_topic(client, subscription_arn)
             unsubscribed_topics.append(topic_arn.split(
                 ":")[-1].replace(topic_prefix + "-", "").title())
 

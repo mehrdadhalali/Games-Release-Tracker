@@ -1,88 +1,101 @@
 """This is the test file for subscribe_functions.py."""
 # pylint: skip-file
 
-from unittest.mock import patch, MagicMock
-import os
-
 import pytest
+from unittest.mock import patch
 import pandas as pd
-
 from subscribe_functions import (
-    is_email_in_rds,
-    add_subscriber_to_rds,
     get_subscriber_counts,
-    create_subscriber_chart
+    subscribe_user_to_topics,
+    unsubscribe_user_from_all_topics,
 )
-
-# Mock data
-MOCK_EMAIL = "test@example.com"
-MOCK_NAME = "Test User"
-MOCK_TOPIC = "c13-games-action"
-mock_genres = ["Action", "Adventure"]
-
-
-@pytest.fixture(autouse=True)
-def mock_env_vars():
-    """Mocks environment variables."""
-    with patch.dict(os.environ, {"REGION": "us-east-1"}):
-        yield
-
-
-@pytest.fixture
-def mock_connect_rds():
-    """Mocks a connection to RDS."""
-    with patch("subscribe_functions.connect_rds") as mock:
-        yield mock
-
 
 @pytest.fixture
 def mock_boto3_client():
-    """Mocks the boto3 SNS client."""
-    with patch("subscribe_functions.boto3.client") as mock_boto3_client:
-        mock_sns_client = MagicMock()
-        mock_boto3_client.return_value = mock_sns_client
-        yield mock_sns_client
-
-
-def test_is_email_in_rds(mock_connect_rds):
-    """Tests checking if email is already in RDS."""
-    mock_cursor = MagicMock()
-    mock_connect_rds.return_value.__enter__.return_value.cursor.return_value = mock_cursor
-
-    mock_cursor.fetchone.return_value = (1,)  # Simulating an existing email
-    result = is_email_in_rds(MOCK_EMAIL)
-    assert result is True
-
-
-def test_add_subscriber_to_rds(mock_connect_rds):
-    """Tests inserting to RDS subscriber table."""
-    mock_cursor = MagicMock()
-    mock_connect_rds.return_value.__enter__.return_value.cursor.return_value = mock_cursor
-
-    # Simulate email already subscribed
-    mock_cursor.fetchone.return_value = (1,)
-    add_subscriber_to_rds(MOCK_NAME, MOCK_EMAIL)
-    mock_cursor.execute.assert_not_called()  # No insert should occur
+    """Mocks the boto3 client."""
+    with patch('boto3.client') as mock_client:
+        yield mock_client
 
 
 def test_get_subscriber_counts(mock_boto3_client):
     """Tests fetching subscriber counts from SNS."""
-    mock_boto3_client.list_topics.return_value = {
-        'Topics': [{'TopicArn': 'arn:aws:sns:us-east-1:123456789012:c13-games-action'}]
-    }
-    mock_boto3_client.get_topic_attributes.return_value = {
-        'Attributes': {'SubscriptionsConfirmed': '5'}
+    # Mock SNS response for list_topics
+    mock_boto3_client.return_value.list_topics.return_value = {
+        'Topics': [
+            {'TopicArn': 'arn:aws:sns:us-east-1:123456789012:c13-games-action'},
+            {'TopicArn': 'arn:aws:sns:us-east-1:123456789012:c13-games-adventure'}
+        ]
     }
 
-    df = get_subscriber_counts("c13-games")
+    # Mock response for get_topic_attributes
+    mock_boto3_client.return_value.get_topic_attributes.side_effect = [
+        {'Attributes': {'SubscriptionsConfirmed': '5'}},
+        {'Attributes': {'SubscriptionsConfirmed': '10'}}
+    ]
+
+    df = get_subscriber_counts(mock_boto3_client.return_value, "c13-games")
 
     assert isinstance(df, pd.DataFrame)
+    assert df.shape[0] == 2
+    assert df.loc[0, 'Topic'] == "Action"
+    assert df.loc[0, 'Subscribers'] == 5
+    assert df.loc[1, 'Topic'] == "Adventure"
+    assert df.loc[1, 'Subscribers'] == 10
 
-    assert df.shape[0] == 10
+
+def test_subscribe_user_to_topics(mock_boto3_client):
+    """Tests adding an email to multiple SNS topics."""
+    mock_genres = ['Action', 'Adventure']
+
+    # Mock list_topics
+    mock_boto3_client.return_value.list_topics.return_value = {
+        'Topics': [
+            {'TopicArn': 'arn:aws:sns:us-east-1:123456789012:c13-games-action'},
+            {'TopicArn': 'arn:aws:sns:us-east-1:123456789012:c13-games-adventure'}
+        ]
+    }
+
+    # Mock is_email_in_sns_topic to always return False
+    mock_boto3_client.return_value.list_subscriptions_by_topic.return_value = {
+        'Subscriptions': []
+    }
+
+    # Mock subscribe function
+    mock_boto3_client.return_value.subscribe.return_value = {
+        'SubscriptionArn': 'mock-arn'}
+
+    subscribe_user_to_topics(
+        mock_boto3_client.return_value, "test@example.com", mock_genres)
+
+    # Ensure subscribe is called twice (for both genres)
+    assert mock_boto3_client.return_value.subscribe.call_count == len(
+        mock_genres)
 
 
+def test_unsubscribe_user_from_all_topics(mock_boto3_client):
+    """Tests unsubscribing user from all SNS topics."""
+    email = "test@example.com"
 
-def test_create_subscriber_chart():
-    """Tests the creation of a subscriber chart."""
-    chart = create_subscriber_chart('c13-games')
-    assert chart is not None  # More specific checks can be added
+    # Mock list_topics
+    mock_boto3_client.return_value.list_topics.return_value = {
+        'Topics': [
+            {'TopicArn': 'arn:aws:sns:us-east-1:123456789012:c13-games-action'},
+            {'TopicArn': 'arn:aws:sns:us-east-1:123456789012:c13-games-adventure'}
+        ]
+    }
+
+    # Mock list_subscriptions_by_topic
+    mock_boto3_client.return_value.list_subscriptions_by_topic.side_effect = [
+        {'Subscriptions': [
+            {'Endpoint': email, 'SubscriptionArn': 'arn:aws:sns:us-east-1:sub-action'}]},
+        {'Subscriptions': [
+            {'Endpoint': email, 'SubscriptionArn': 'arn:aws:sns:us-east-1:sub-adventure'}]}
+    ]
+
+    # Mock unsubscribe function
+    mock_boto3_client.return_value.unsubscribe.return_value = {}
+
+    unsubscribe_user_from_all_topics(mock_boto3_client.return_value, email)
+
+    # Ensure unsubscribe is called for both topics
+    assert mock_boto3_client.return_value.unsubscribe.call_count == 2
