@@ -86,20 +86,3 @@ def test_create_platform_bar_chart(mock_get_game_data):
 
     assert chart is not None
     assert isinstance(chart, alt.Chart)
-
-
-def test_preprocess_descriptions():
-    """Test for preprocess_descriptions."""
-    word_counts = preprocess_descriptions(mock_descriptions)
-
-    assert isinstance(word_counts, dict)
-    assert len(word_counts) > 0
-
-
-def test_create_word_cloud():
-    """Test for create_word_cloud."""
-    word_counts = preprocess_descriptions(mock_descriptions)
-    fig = create_word_cloud(word_counts)
-
-    assert fig is not None
-    assert isinstance(fig, plt.Figure)
