@@ -3,7 +3,7 @@
 from os import environ as ENV
 
 import psycopg2
-from boto3 import client
+import boto3
 import pandas as pd
 import altair as alt
 import streamlit as st
@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-sns_client = client('sns', region_name=ENV["REGION"])
+sns_client = boto3.client('sns', region_name=ENV["REGION"])
 
 def connect_rds():
     """Initialize PostgreSQL connection."""
