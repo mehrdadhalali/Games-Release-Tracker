@@ -3,6 +3,19 @@
 import pytest
 from bs4 import BeautifulSoup
 from scrape_gog_game import format_os, format_price, find_price
+from scrape_gog import get_game_urls_from_page
+
+
+@pytest.mark.parametrize("html, expected", [
+    ('<a class="product-tile" href="/game1"></a><a class="product-tile" href="/game2"></a>',
+     ["/game1", "/game2"]),
+    ('<a class="product-tile" href="/game1"></a><a class="other-class" href="/game2"></a>',
+     ["/game1"]), ('<div><a class="product-tile" href="/game3"></a></div>',  ["/game3"]),
+    ('<a class="product-tile" href=""></a>',
+     [""]), ('<div></div>', []), ('', [])
+])
+def test_get_game_urls_from_page(html, expected):
+    assert get_game_urls_from_page(html) == expected
 
 
 @pytest.mark.parametrize("html, expected", [
