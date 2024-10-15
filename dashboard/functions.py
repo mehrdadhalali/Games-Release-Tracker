@@ -2,7 +2,6 @@
 
 import re
 from collections import Counter
-import numpy as np
 
 import streamlit as st
 import pandas as pd
@@ -52,6 +51,7 @@ def create_donut_chart():
 
 
 def create_line_chart():
+    """Create a line chart about total all time game releases over time."""
     daily_game_data = get_daily_game_count()
     daily_game_data['release_date'] = pd.to_datetime(
         daily_game_data['release_date'])
