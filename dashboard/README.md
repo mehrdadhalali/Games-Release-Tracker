@@ -93,23 +93,21 @@ Build, tag, push, and deploy your Dockerised dashboard on AWS:
 1. Dockerfile
 
 Ensure the repository contains a Dockerfile that defines how to build the application image.
-2. Build the Docker image with platform
+
+2. Environment variables
+
+Ensure you have the following additional environment variables:
 ```
-docker build --platform linux/amd64 -t games-tracker-dashboard .
+AWS_ACCOUNT_ID=<Your AWS account ID>
+ECR_REPO_NAME=<Your ECR repository name>
 ```
-3. Tag the image
+
+3. Run `push_to_ecr.sh`:
 ```
-docker tag games-tracker-dashboard:latest <aws-account-id>.dkr.ecr.<region>.amazonaws.com/<repository-name>:latest
+bash push-to-ecr.sh
 ```
-4. Login to ECR
-```
-aws ecr get-login-password --region <region> | docker login --username AWS --password-stdin <aws-account-id>.dkr.ecr.<region>.amazonaws.com
-```
-5. Push the image to ECR
-```
-docker push <aws-account-id>.dkr.ecr.<region>.amazonaws.com/<repository-name>:latest
-```
-6. (Optional) Run the Docker Container Locally
+
+4. (Optional) Run the Docker Container Locally
 ```
 docker run -p 8501:8501 games-tracker-dashboard
 ```
