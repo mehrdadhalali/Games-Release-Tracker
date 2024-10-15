@@ -1,8 +1,25 @@
 # pylint: skip-file
 
 import pytest
+from bs4 import BeautifulSoup
+from scrape_gog_game import format_os, format_price, find_price
 
-from scrape_gog_game import format_os, format_price
+
+@pytest.mark.parametrize("html, expected", [
+    ('<div><span selenium-id="ProductFinalPrice">59.99</span></div>', 5999),
+    ('<div><span class="product-actions-price__final-amount">21.00</span></div>', 2100),
+    ('<div><span class="product-actions-price__final-amount">1999.00</span></div>', 199900),
+])
+def test_find_price(html, expected):
+    soup = BeautifulSoup(html, 'html.parser')
+    assert find_price(soup) == expected
+
+
+def test_find_price_raises_error():
+    soup = BeautifulSoup(
+        '<div><span class="no-price-here"></span></div>', 'html.parser')
+    with pytest.raises(ValueError, match="The price is somewhere else!"):
+        find_price(soup)
 
 
 @pytest.mark.parametrize("os_string,os",
