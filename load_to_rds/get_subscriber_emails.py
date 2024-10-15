@@ -57,4 +57,3 @@ def get_subscribers_per_genre() -> list[dict]:
         })
 
     return subscribers_per_genre
-

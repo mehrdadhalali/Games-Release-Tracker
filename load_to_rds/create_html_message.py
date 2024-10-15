@@ -1,5 +1,4 @@
 """This script creates an HTML, upon receiving a list of games, and their common genre."""
-from json import load
 
 
 def format_genre_text(genre: str) -> str:
@@ -30,7 +29,9 @@ def format_price(price: int) -> str:
 
 def create_html(games: list[dict], genre: str) -> str:
     """Creates an HTML of the games of a specific genre."""
-    message = put_in_tag(f"Here is all of the newly released games of the {format_genre_text(genre)} genre:",
+
+    genre_formatted = format_genre_text(genre)
+    message = put_in_tag(f"Here is all of the newly released games of the {genre_formatted} genre:",
                          "h1")
     for game in games:
         message += put_in_tag(put_in_tag(game["title"], "h2"),
