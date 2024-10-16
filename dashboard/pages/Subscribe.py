@@ -14,7 +14,9 @@ from pages.utils.subscribe_functions import (add_subscriber_to_rds, create_subsc
 EMAIL_PATTERN = r'^[\w\.-]+@[\w\.-]+\.\w+$'
 
 load_dotenv()
-SNS_CLIENT = client('sns', region_name=ENV["REGION"])
+SNS_CLIENT = client(
+    'sns', region_name=ENV["REGION"],
+    aws_access_key_id=ENV["AWS_ACCESS_KEY"], aws_secret_access_key=ENV["AWS_SECRET_KEY"])
 
 st.set_page_config(layout="wide")
 
