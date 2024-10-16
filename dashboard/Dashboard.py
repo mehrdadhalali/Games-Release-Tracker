@@ -1,5 +1,3 @@
-# pylint: disable=C0103
-# pylint: disable=W0621
 """
 This is the main dashboard for the Games Tracker Streamlit application.
 It includes data visualisations on the information collected from Steam, GOG and Epic,
@@ -10,7 +8,9 @@ from datetime import datetime
 import streamlit as st
 import nltk
 
-from functions import create_donut_chart, create_genre_bar_chart, create_line_chart, create_os_bar_chart, create_platform_bar_chart, create_release_line_chart, create_word_cloud, preprocess_descriptions
+from functions import (create_donut_chart, create_genre_bar_chart, create_line_chart,
+                       create_os_bar_chart, create_platform_bar_chart,
+                       create_release_line_chart, create_word_cloud, preprocess_descriptions)
 from sl_queries import get_game_descriptions
 
 # Download the 'punkt' tokenizer model

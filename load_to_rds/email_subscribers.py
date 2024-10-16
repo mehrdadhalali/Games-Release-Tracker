@@ -1,7 +1,6 @@
 """This script is for emailing the subscribers using SES."""
 
 from os import environ as ENV
-from json import load
 
 from boto3 import client
 from dotenv import load_dotenv
@@ -40,15 +39,13 @@ def send_genre_emails(scraped_data: list[dict]):
         if len(item["subscribers"]) > 0:
 
             genre = item["genre"]
-            print(genre)
             genre_games = get_games_by_genre(genre, scraped_data)
             to_send = create_html(genre_games, genre)
 
             subscriber_emails = item["subscribers"]
-            print(subscriber_emails)
 
             ses.send_email(
-                Source="trainee.mehrdad.halali@sigmalabs.co.uk",
+                Source=ENV["SENDER_EMAIL_ADDRESS"],
                 Destination={"ToAddresses": subscriber_emails,
                              "BccAddresses": [],
                              "CcAddresses": []},

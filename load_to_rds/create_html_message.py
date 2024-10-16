@@ -1,5 +1,4 @@
 """This script creates an HTML, upon receiving a list of games, and their common genre."""
-from json import load
 
 
 def format_genre_text(genre: str) -> str:
@@ -30,7 +29,9 @@ def format_price(price: int) -> str:
 
 def create_html(games: list[dict], genre: str) -> str:
     """Creates an HTML of the games of a specific genre."""
-    message = put_in_tag(f"Here is all of the newly released games of the {format_genre_text(genre)} genre:",
+
+    genre_formatted = format_genre_text(genre)
+    message = put_in_tag(f"Here are all of the newly released games of the {genre_formatted} genre:",
                          "h1")
     for game in games:
         message += put_in_tag(put_in_tag(game["title"], "h2"),
@@ -44,10 +45,3 @@ def create_html(games: list[dict], genre: str) -> str:
         message += put_in_tag(game["description"], "p")
     message = put_in_tag(put_in_tag(message, "body"), "html")
     return message
-
-
-if __name__ == "__main__":
-    with open("steam-13-10-24.json", "r") as f:
-        games = load(f)
-    with open("message_html.html", "w") as f:
-        f.write(create_html(games["listings"], "Cool"))
