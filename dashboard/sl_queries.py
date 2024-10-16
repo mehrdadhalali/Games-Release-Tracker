@@ -6,7 +6,6 @@ from os import environ as ENV
 
 import streamlit as st
 from psycopg2 import connect
-import altair as alt
 import pandas as pd
 from dotenv import load_dotenv
 
