@@ -7,6 +7,7 @@ from datetime import datetime
 
 import streamlit as st
 import nltk
+from dotenv import load_dotenv
 
 from functions import (create_donut_chart, create_genre_bar_chart, create_line_chart,
                        create_os_bar_chart, create_platform_bar_chart,
@@ -15,6 +16,7 @@ from sl_queries import get_game_descriptions
 
 # Download the 'punkt' tokenizer model
 nltk.download('punkt_tab')
+nltk.download('stopwords')
 
 # Page configuration
 st.set_page_config(layout="wide")
@@ -31,6 +33,7 @@ st.markdown(
 
 if __name__ == "__main__":
     # User input for OS selection, date range, and NSFW checkbox
+    load_dotenv()
     cols = st.columns([2, 0.75, 1, 0.35])
     with cols[0]:
         st.title("Games Tracker")
@@ -99,7 +102,7 @@ if __name__ == "__main__":
         unsafe_allow_html=True)
 
     descriptions = get_game_descriptions(
-            show_nsfw, start_date, end_date, os_selection)
+        show_nsfw, start_date, end_date, os_selection)
     word_counts = preprocess_descriptions(descriptions)
     word_cloud_fig = create_word_cloud(word_counts)
     st.pyplot(word_cloud_fig, use_container_width=True)

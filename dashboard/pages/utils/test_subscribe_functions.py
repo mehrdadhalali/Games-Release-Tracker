@@ -4,11 +4,13 @@
 import pytest
 from unittest.mock import patch
 import pandas as pd
+from boto3 import client
 from subscribe_functions import (
     get_subscriber_counts,
     subscribe_user_to_topics,
     unsubscribe_user_from_all_topics,
 )
+
 
 @pytest.fixture
 def mock_boto3_client():

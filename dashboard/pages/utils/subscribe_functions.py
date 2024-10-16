@@ -7,6 +7,13 @@ import pandas as pd
 import altair as alt
 import streamlit as st
 
+from dotenv import load_dotenv
+from boto3 import client
+
+
+load_dotenv()
+
+
 def connect_rds() -> psycopg2.extensions.connection:
     """Initialize PostgreSQL connection."""
     return psycopg2.connect(
@@ -107,8 +114,8 @@ def subscribe_user_to_topics(client, email: str, selected_genres: list[str]) -> 
                 Protocol='email',
                 Endpoint=email
             )
-            st.success(f"Successfully subscribed to {
-                       genre} topic. Check your email to confirm the subscription.")
+            st.success(f"""Successfully subscribed to {
+                       genre} topic. Check your email to confirm the subscription.""")
         else:
             st.warning(f"Already subscribed to {genre}.")
 
@@ -141,15 +148,16 @@ def unsubscribe_user_from_all_topics(client, email: str) -> None:
     topics = get_sns_topics_with_prefix(client, topic_prefix)
 
     for topic_arn in topics:
-        subscription_arn = get_user_subscriptions_for_topic(client, topic_arn, email)
+        subscription_arn = get_user_subscriptions_for_topic(
+            client, topic_arn, email)
         if subscription_arn:
             unsubscribe_user_from_topic(client, subscription_arn)
             unsubscribed_topics.append(topic_arn.split(
                 ":")[-1].replace(topic_prefix + "-", "").title())
 
     if unsubscribed_topics:
-        st.success(f"Unsubscribed from the following topics: {
-                   ', '.join(unsubscribed_topics)}.")
+        st.success(f"""Unsubscribed from the following topics: {
+                   ', '.join(unsubscribed_topics)}.""")
     else:
         st.warning("No subscriptions found for the email.")
 
