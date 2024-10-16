@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
 def get_connection() -> connect:
     '''Returns a connection to the RDS database'''
     return connect(host=ENV["DB_HOST"],
@@ -43,8 +44,10 @@ def get_game_data(show_nsfw: bool, start_date: str, end_date: str, os_selection:
     LEFT JOIN platform p ON gl.platform_id = p.platform_id
     LEFT JOIN game_os_assignment goa ON g.game_id = goa.game_id
     LEFT JOIN operating_system os ON goa.os_id = os.os_id
-    WHERE (%s OR g.is_nsfw = FALSE)
+    WHERE (NOT g.is_nsfw OR %s)
     """
+    if not show_nsfw:
+        show_nsfw = False
 
     params = [show_nsfw]
 
