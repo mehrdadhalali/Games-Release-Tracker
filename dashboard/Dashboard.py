@@ -15,6 +15,7 @@ from sl_queries import get_game_descriptions
 
 # Download the 'punkt' tokenizer model
 nltk.download('punkt_tab')
+nltk.download('stopwords')
 
 # Page configuration
 st.set_page_config(layout="wide")
@@ -99,7 +100,7 @@ if __name__ == "__main__":
         unsafe_allow_html=True)
 
     descriptions = get_game_descriptions(
-            show_nsfw, start_date, end_date, os_selection)
+        show_nsfw, start_date, end_date, os_selection)
     word_counts = preprocess_descriptions(descriptions)
     word_cloud_fig = create_word_cloud(word_counts)
     st.pyplot(word_cloud_fig, use_container_width=True)
