@@ -6,7 +6,7 @@ import pytest
 
 from upload_to_db import remove_duplicates
 from transform_game_data import has_nsfw_tags, transform_to_tuples
-from create_html_message import format_genre_text
+from create_html_message import format_genre_text, put_in_tag
 
 
 def test_remove_duplicates():
@@ -67,7 +67,23 @@ class TestCreateHtmlMessage:
                              [("action", "Action"),
                               ("adventure", "Adventure"),
                               ("multiplayer", "Multiplayer"),
-                              "rpg", "RPG"])
+                              ("rpg", "RPG")])
     def test_format_genre_text(self, genre, formatted_genre):
 
         assert format_genre_text(genre) == formatted_genre
+
+    def test_put_in_tag_required_input_only(self):
+
+        assert put_in_tag("body", "tag") == "<tag > body</tag>"
+
+    def test_put_in_tag_attrs(self):
+
+        assert put_in_tag("body", "tag", "attr") == "<tag attr> body</tag>"
+
+    def test_put_in_tag_single(self):
+
+        assert put_in_tag("", "tag", is_single=True) == "<tag > "
+
+    def test_put_in_tag_single_attrs(self):
+
+        assert put_in_tag("", "tag", "attr", is_single=True) == "<tag attr> "
