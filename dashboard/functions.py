@@ -180,9 +180,10 @@ def create_os_bar_chart(show_nsfw: bool, os_selection: Optional[str], start_date
     return os_bar_chart
 
 
-def create_release_line_chart(show_nsfw: bool, start_date: str, end_date: str) -> Optional[alt.Chart]:
-    """Line chart for platform releases over time."""
-    daily_data = get_daily_releases(show_nsfw, start_date, end_date)
+def create_release_line_chart(show_nsfw: bool, os_selection: list[str], start_date: str, end_date: str) -> Optional[alt.Chart]:
+    """Line chart for platform releases over time with OS filtering."""
+    daily_data = get_daily_releases(
+        show_nsfw, start_date, end_date, os_selection)
 
     # Check if start and end date are the same
     if start_date == end_date:
@@ -211,9 +212,9 @@ def create_release_line_chart(show_nsfw: bool, start_date: str, end_date: str) -
     return line_chart
 
 
-def create_genre_bar_chart(show_nsfw: bool, start_date: str, end_date: str) -> alt.Chart:
-    """Creates a horizontal bar chart for genre popularity."""
-    genre_data = get_genre_data(show_nsfw, start_date, end_date)
+def create_genre_bar_chart(show_nsfw: bool, os_selection: list[str], start_date: str, end_date: str) -> alt.Chart:
+    """Creates a horizontal bar chart for genre popularity with OS filtering."""
+    genre_data = get_genre_data(show_nsfw, start_date, end_date, os_selection)
 
     genre_bar_graph = alt.Chart(genre_data).mark_bar(color=COLOURS[0]).encode(
         # Sort by x in descending order
@@ -229,6 +230,7 @@ def create_genre_bar_chart(show_nsfw: bool, start_date: str, end_date: str) -> a
     )
 
     return genre_bar_graph
+
 
 
 def preprocess_descriptions(descriptions: list[str]) -> dict[str, int]:

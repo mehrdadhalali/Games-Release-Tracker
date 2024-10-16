@@ -73,15 +73,15 @@ if __name__ == "__main__":
     if start_date != end_date:
         cols = st.columns(2)
         with cols[0]:
-            st.altair_chart(create_release_line_chart(show_nsfw, start_date, end_date),
+            st.altair_chart(create_release_line_chart(show_nsfw, os_selection, start_date, end_date),
                             use_container_width=True)
         with cols[1]:
-            st.altair_chart(create_genre_bar_chart(show_nsfw, start_date, end_date),
+            st.altair_chart(create_genre_bar_chart(show_nsfw, os_selection, start_date, end_date),
                             use_container_width=True)
     else:
         cols = st.columns([0.5, 1, 0.5])
         with cols[1]:
-            st.altair_chart(create_genre_bar_chart(show_nsfw, start_date, end_date),
+            st.altair_chart(create_genre_bar_chart(show_nsfw, os_selection, start_date, end_date),
                             use_container_width=True)
 
     # All time stats
