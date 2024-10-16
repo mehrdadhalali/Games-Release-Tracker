@@ -47,8 +47,14 @@ with cols[3]:
     st.write(" <br> ", unsafe_allow_html=True)
     show_nsfw = st.checkbox("NSFW")
 
-# Create a search box
-search_query = st.text_input("Search for a game:", "")
+cols = st.columns([2, 1])
+with cols[0]:
+    # Create a search box
+    search_query = st.text_input("Search for a game:", "")
+with cols[1]:
+    # Create dropdown for sorting
+    sort_by = st.selectbox("Sort by:", options=[
+        "", "Price (Ascending)", "Price (Descending)", "Title (A-Z)", "Title (Z-A)", "Date (Ascending)", "Date (Descending)"])
 
 # Game releases table
-display_game_table(show_nsfw, os_selection, start_date, end_date, search_query)
+display_game_table(show_nsfw, os_selection, start_date, end_date, search_query, sort_by)
