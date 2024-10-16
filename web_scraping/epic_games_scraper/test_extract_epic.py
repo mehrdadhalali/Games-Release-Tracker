@@ -1,7 +1,7 @@
 # pylint: skip-file
 
 import pytest
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 from extract_epic import format_release_date, get_operating_systems, get_genres, listing_is_game, process_listings
 from gql.transport.exceptions import TransportQueryError
 
@@ -75,8 +75,11 @@ def test_listing_is_game(input_categories, expected_output):
     assert listing_is_game(input_categories) == expected_output
 
 
-@patch("extract_epic.load_graph_ql_query")
-def test_process_listings_unavailable_api(fake_load_ql):
-    fake_load_ql.return_value = ""
-    with pytest.raises(Exception):
-        process_listings()
+def test_process_listings_unavailable_api():
+    """Tests that when the API is not available, a reasonable response is still returned from the lambda."""
+    with patch('extract_epic.execute_query') as fake_execute:
+        fake_execute.side_effect = TransportQueryError("Unavailable API.")
+        listings = process_listings()
+        needed_keys = ["platform", "listings"]
+        assert all([key in listings for key in needed_keys])
+        assert isinstance(listings['listings'], list)
