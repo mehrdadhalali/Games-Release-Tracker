@@ -1,8 +1,9 @@
 boto3
 psycopg2-binary
 python-dotenv
-reportlab
-pandas
+kaleido
+xhtml2pdf
+plotly_express
 pytest
 pylint
 pytest--cov
