@@ -13,11 +13,6 @@ from boto3 import client
 
 load_dotenv()
 
-sns_client = client(
-    'sns', region_name=ENV["REGION"],
-    aws_access_key_id=ENV["AWS_ACCESS_KEY"],
-    aws_secret_access_key=ENV["AWS_SECRET_KEY"])
-
 
 def connect_rds() -> psycopg2.extensions.connection:
     """Initialize PostgreSQL connection."""
