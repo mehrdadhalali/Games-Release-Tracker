@@ -5,15 +5,12 @@ from unittest.mock import patch
 
 import pandas as pd
 import altair as alt
-import matplotlib.pyplot as plt
 
 from functions import (
     create_donut_chart,
     create_line_chart,
     display_game_table,
-    create_platform_bar_chart,
-    preprocess_descriptions,
-    create_word_cloud
+    create_platform_bar_chart
 )
 
 # Sample mock data

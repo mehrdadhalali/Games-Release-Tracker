@@ -7,7 +7,6 @@ from datetime import datetime
 
 import streamlit as st
 import nltk
-from dotenv import load_dotenv
 
 from functions import (create_donut_chart, create_genre_bar_chart, create_line_chart,
                        create_os_bar_chart, create_platform_bar_chart,
