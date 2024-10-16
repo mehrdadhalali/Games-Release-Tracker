@@ -2,6 +2,7 @@
 
 import re
 from collections import Counter
+from typing import Optional
 
 import streamlit as st
 import pandas as pd
@@ -17,7 +18,7 @@ COLOURS = ['#6a0dad', '#A26ED5', '#3b5998',
            '#5780d9', '#a80dad', '#e426eb', '#0539f7']
 
 
-def create_donut_chart():
+def create_donut_chart() -> alt.Chart:
     """Creates a donut chart about weekday releases."""
     release_data = get_weekdays_data()
     release_data['release_date'] = pd.to_datetime(
@@ -50,7 +51,7 @@ def create_donut_chart():
     return donut_chart
 
 
-def create_line_chart():
+def create_line_chart() -> alt.Chart:
     """Create a line chart about total all time game releases over time."""
     daily_game_data = get_daily_game_count()
     daily_game_data['release_date'] = pd.to_datetime(
@@ -72,7 +73,7 @@ def create_line_chart():
     return line_chart
 
 
-def display_game_table(show_nsfw, os_selection, start_date, end_date, search_query):
+def display_game_table(show_nsfw: bool, os_selection: Optional[str], start_date: str, end_date: str, search_query: str) -> None:
     """Generates a table for the Games page depending on user selection and input."""
     table_data = get_game_data(
         show_nsfw, start_date, end_date, os_selection, search_query
@@ -107,7 +108,7 @@ def display_game_table(show_nsfw, os_selection, start_date, end_date, search_que
     st.markdown(html_table, unsafe_allow_html=True)
 
 
-def create_platform_bar_chart(os_selection, start_date, end_date, show_nsfw):
+def create_platform_bar_chart(os_selection: Optional[str], start_date: str, end_date: str, show_nsfw: bool) -> alt.Chart:
     """Chart for the number of games released on each platform."""
     game_data = get_game_data(show_nsfw, start_date, end_date, os_selection)
 
@@ -132,7 +133,7 @@ def create_platform_bar_chart(os_selection, start_date, end_date, show_nsfw):
     return bar_chart
 
 
-def create_os_bar_chart(show_nsfw, os_selection, start_date, end_date):
+def create_os_bar_chart(show_nsfw: bool, os_selection: Optional[str], start_date: str, end_date: str) -> alt.Chart:
     """Bar chart for releases per operating system."""
     # Get the game data based on the selected filters
     game_data = get_game_data(show_nsfw, start_date, end_date, os_selection)
@@ -163,7 +164,7 @@ def create_os_bar_chart(show_nsfw, os_selection, start_date, end_date):
     return os_bar_chart
 
 
-def create_release_line_chart(show_nsfw, start_date, end_date):
+def create_release_line_chart(show_nsfw: bool, start_date: str, end_date: str) -> Optional[alt.Chart]:
     """Line chart for platform releases over time."""
     daily_data = get_daily_releases(show_nsfw, start_date, end_date)
 
@@ -194,7 +195,7 @@ def create_release_line_chart(show_nsfw, start_date, end_date):
     return line_chart
 
 
-def create_genre_bar_chart(show_nsfw, start_date, end_date):
+def create_genre_bar_chart(show_nsfw: bool, start_date: str, end_date: str) -> alt.Chart:
     """Creates a horizontal bar chart for genre popularity."""
     genre_data = get_genre_data(show_nsfw, start_date, end_date)
 
@@ -214,7 +215,7 @@ def create_genre_bar_chart(show_nsfw, start_date, end_date):
     return genre_bar_graph
 
 
-def preprocess_descriptions(descriptions):
+def preprocess_descriptions(descriptions: list[str]) -> dict[str, int]:
     """
     Preprocess game descriptions: lowercasing, removing punctuation, filtering stopwords.
     """

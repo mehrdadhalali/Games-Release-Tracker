@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-def get_connection():
+def get_connection() -> connect:
     '''Returns a connection to the RDS database'''
     return connect(host=ENV["DB_HOST"],
                    port=ENV["DB_PORT"],
@@ -21,7 +21,7 @@ def get_connection():
 
 
 @st.cache_data
-def get_game_data(show_nsfw, start_date, end_date, os_selection, search_query=""):
+def get_game_data(show_nsfw: bool, start_date: str, end_date: str, os_selection: str, search_query: str = "") -> pd.DataFrame:
     '''
     Retrieves game information for the dashboard table including
     name, genres, release date, platform, price, and listing URL.
@@ -89,7 +89,7 @@ def get_game_data(show_nsfw, start_date, end_date, os_selection, search_query=""
 
 
 @st.cache_data
-def get_daily_releases(show_nsfw, start_date, end_date):
+def get_daily_releases(show_nsfw: bool, start_date: str, end_date: str) -> pd.DataFrame:
     """
     Retrieves the number of games released on each platform between the chosen dates.
     """
@@ -120,7 +120,7 @@ def get_daily_releases(show_nsfw, start_date, end_date):
 
 
 @st.cache_data
-def get_weekdays_data():
+def get_weekdays_data() -> pd.DataFrame:
     '''Retrieves release dates from the database'''
     query = "SELECT release_date FROM game;"
 
@@ -138,7 +138,7 @@ def get_weekdays_data():
 
 
 @st.cache_data
-def get_daily_game_count():
+def get_daily_game_count() -> pd.DataFrame:
     '''Retrieves the count of distinct game titles for each release date.'''
     query = """
     SELECT
@@ -163,7 +163,7 @@ def get_daily_game_count():
 
 
 @st.cache_data
-def get_genre_data(show_nsfw, start_date, end_date):
+def get_genre_data(show_nsfw: bool, start_date: str, end_date: str) -> pd.DataFrame:
     """
     Retrieves information about the most frequent genres for releases.
     """
@@ -195,7 +195,7 @@ def get_genre_data(show_nsfw, start_date, end_date):
 
 
 @st.cache_data
-def get_game_descriptions(show_nsfw, start_date, end_date, os_selection):
+def get_game_descriptions(show_nsfw: bool, start_date: str, end_date: str, os_selection: str) -> list[str]:
     """
     Retrieves game descriptions based on NSFW, date range, and operating system selection.
     """

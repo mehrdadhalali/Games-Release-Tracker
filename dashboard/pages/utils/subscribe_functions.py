@@ -19,7 +19,7 @@ sns_client = client(
     aws_secret_access_key=ENV["AWS_SECRET_KEY"])
 
 
-def connect_rds():
+def connect_rds() -> psycopg2.extensions.connection:
     """Initialize PostgreSQL connection."""
     return psycopg2.connect(
         host=ENV["DB_HOST"],
@@ -30,7 +30,7 @@ def connect_rds():
     )
 
 
-def is_email_in_rds(email):
+def is_email_in_rds(email: str) -> bool:
     """Check if the email is already subscribed to the weekly report."""
     with connect_rds() as conn:
         with conn.cursor() as cur:
@@ -39,7 +39,7 @@ def is_email_in_rds(email):
             return cur.fetchone() is not None
 
 
-def add_subscriber_to_rds(name, email):
+def add_subscriber_to_rds(name: str, email: str) -> None:
     """Insert subscriber name and email into the RDS database if not already present."""
     if is_email_in_rds(email):
         st.warning(f"{email} is already subscribed to the weekly report.")
@@ -56,7 +56,7 @@ def add_subscriber_to_rds(name, email):
             st.success(f"{name} has been subscribed to the weekly report.")
 
 
-def get_subscriber_counts(client, topic_startswith):
+def get_subscriber_counts(client, topic_startswith: str) -> pd.DataFrame:
     """Get subscriber counts for all relevant topics."""
     response = client.list_topics()
     topic_arns = response['Topics']
@@ -76,7 +76,7 @@ def get_subscriber_counts(client, topic_startswith):
     return pd.DataFrame(subscriber_data)
 
 
-def create_subscriber_chart(client, topic):
+def create_subscriber_chart(client, topic: str) -> alt.Chart:
     """Creates a horizontal bar chart about subscriber counts to SNS topics."""
     data = get_subscriber_counts(client, topic)
 
@@ -94,13 +94,13 @@ def create_subscriber_chart(client, topic):
     return chart
 
 
-def is_email_in_sns_topic(client, email, topic_arn):
+def is_email_in_sns_topic(client, email: str, topic_arn: str) -> bool:
     """Check if the email is already subscribed to the given SNS topic."""
     subscriptions = client.list_subscriptions_by_topic(TopicArn=topic_arn)
     return any(sub['Endpoint'] == email for sub in subscriptions['Subscriptions'])
 
 
-def subscribe_user_to_topics(client, email, selected_genres):
+def subscribe_user_to_topics(client, email: str, selected_genres: list[str]) -> None:
     """Subscribe user to the selected SNS topics, checking for duplicates."""
     topic_prefix = "c13-games"
     for genre in selected_genres:
@@ -125,13 +125,13 @@ def subscribe_user_to_topics(client, email, selected_genres):
             st.warning(f"Already subscribed to {genre}.")
 
 
-def get_sns_topics_with_prefix(client, prefix):
+def get_sns_topics_with_prefix(client, prefix: str) -> list[str]:
     """Return all SNS topics that start with the given prefix."""
     response = client.list_topics()
     return [topic['TopicArn'] for topic in response['Topics'] if prefix in topic['TopicArn']]
 
 
-def get_user_subscriptions_for_topic(client, topic_arn, email):
+def get_user_subscriptions_for_topic(client, topic_arn: str, email: str):
     """Return the subscription ARN if the user is subscribed to the topic."""
     subscriptions = client.list_subscriptions_by_topic(TopicArn=topic_arn)
     for sub in subscriptions['Subscriptions']:
@@ -140,12 +140,12 @@ def get_user_subscriptions_for_topic(client, topic_arn, email):
     return None
 
 
-def unsubscribe_user_from_topic(client, subscription_arn):
+def unsubscribe_user_from_topic(client, subscription_arn: str) -> None:
     """Unsubscribe user from the topic using the subscription ARN."""
     client.unsubscribe(SubscriptionArn=subscription_arn)
 
 
-def unsubscribe_user_from_all_topics(client, email):
+def unsubscribe_user_from_all_topics(client, email: str) -> None:
     """Unsubscribe user from all SNS topics that start with 'c13-games'."""
     topic_prefix = "c13-games"
     unsubscribed_topics = []
@@ -167,7 +167,7 @@ def unsubscribe_user_from_all_topics(client, email):
         st.warning("No subscriptions found for the email.")
 
 
-def remove_subscriber_from_rds(email):
+def remove_subscriber_from_rds(email: str) -> None:
     """Remove the subscriber from the RDS database."""
     with connect_rds() as conn:
         with conn.cursor() as cur:
