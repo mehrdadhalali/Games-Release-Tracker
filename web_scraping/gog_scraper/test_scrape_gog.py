@@ -1,8 +1,38 @@
 # pylint: skip-file
 
 import pytest
+from bs4 import BeautifulSoup
+from scrape_gog_game import format_os, format_price, find_price
+from scrape_gog import get_game_urls_from_page
 
-from scrape_gog_game import format_os, format_price
+
+@pytest.mark.parametrize("html, expected", [
+    ('<a class="product-tile" href="/game1"></a><a class="product-tile" href="/game2"></a>',
+     ["/game1", "/game2"]),
+    ('<a class="product-tile" href="/game1"></a><a class="other-class" href="/game2"></a>',
+     ["/game1"]), ('<div><a class="product-tile" href="/game3"></a></div>',  ["/game3"]),
+    ('<a class="product-tile" href=""></a>',
+     [""]), ('<div></div>', []), ('', [])
+])
+def test_get_game_urls_from_page(html, expected):
+    assert get_game_urls_from_page(html) == expected
+
+
+@pytest.mark.parametrize("html, expected", [
+    ('<div><span selenium-id="ProductFinalPrice">59.99</span></div>', 5999),
+    ('<div><span class="product-actions-price__final-amount">21.00</span></div>', 2100),
+    ('<div><span class="product-actions-price__final-amount">1999.00</span></div>', 199900),
+])
+def test_find_price(html, expected):
+    soup = BeautifulSoup(html, 'html.parser')
+    assert find_price(soup) == expected
+
+
+def test_find_price_raises_error():
+    soup = BeautifulSoup(
+        '<div><span class="no-price-here"></span></div>', 'html.parser')
+    with pytest.raises(ValueError, match="The price is somewhere else!"):
+        find_price(soup)
 
 
 @pytest.mark.parametrize("os_string,os",
@@ -13,7 +43,6 @@ from scrape_gog_game import format_os, format_price
                           ("MAC OS X (10.12+)", ["Mac"]),
                           ("Windows (10, 11), Linux (Ubuntu 20.04, Ubuntu 22.04), Mac OS X (10.12+)", ["Windows", "Mac", "Linux"])])
 def test_format_os(os_string, os):
-
     assert format_os(os_string) == os
 
 
@@ -24,5 +53,4 @@ def test_format_os(os_string, os):
                           ("frEe", 0),
                           ("1.00", 100)])
 def test_format_price(price_str, price):
-
     assert format_price(price_str) == price
