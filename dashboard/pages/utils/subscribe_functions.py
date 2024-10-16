@@ -8,7 +8,6 @@ import altair as alt
 import streamlit as st
 
 from dotenv import load_dotenv
-from boto3 import client
 
 
 load_dotenv()
