@@ -24,8 +24,8 @@ def create_topics(genres: list) -> list[dict]:
     """Creates an SNS topic for every genre, returns their names and ARNs."""
 
     sns = client(service_name="sns",
-                 aws_access_key_id=ENV["AWS_ACCESS_KEY"],
-                 aws_secret_access_key=ENV["AWS_SECRET_ACCESS_KEY"])
+                 aws_access_key_id=ENV["MY_AWS_ACCESS_KEY"],
+                 aws_secret_access_key=ENV["MY_AWS_SECRET_ACCESS_KEY"])
 
     topics = []
 

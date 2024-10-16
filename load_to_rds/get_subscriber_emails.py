@@ -36,8 +36,8 @@ def get_subscribers_per_genre() -> list[dict]:
     """Returns all of the subscriber emails for each genre."""
 
     sns = client(service_name="sns",
-                 aws_access_key_id=ENV["AWS_ACCESS_KEY"],
-                 aws_secret_access_key=ENV["AWS_SECRET_ACCESS_KEY"])
+                 aws_access_key_id=ENV["MY_AWS_ACCESS_KEY"],
+                 aws_secret_access_key=ENV["MY_AWS_SECRET_ACCESS_KEY"])
 
     topics = get_SNS_topics(sns)
 
