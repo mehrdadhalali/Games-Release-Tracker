@@ -3,7 +3,6 @@
 import pytest
 from unittest.mock import patch
 from extract_epic import format_release_date, get_operating_systems, get_genres, listing_is_game, process_listings
-from gql import Client, gql
 from gql.transport.exceptions import TransportQueryError
 
 
