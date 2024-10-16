@@ -42,7 +42,7 @@ if __name__ == "__main__":
         )
     with cols[2]:
         today = datetime.now().date()
-        min_date = datetime(2024, 9, 30).date()
+        min_date = datetime(2024, 10, 1).date()
         date_range = st.date_input(
             "Select date range:",
             value=[min_date, today],
