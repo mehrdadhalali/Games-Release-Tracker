@@ -1,6 +1,6 @@
-# Terraform
+# 🚀 Terraform
 
-## Overview
+##  🌎 Overview
 
 This terraform folder creates all the required AWS services for this project bar the ECR's containing the images. 
 This includes 
@@ -14,7 +14,13 @@ This includes
     - Dashboard Task Definition
     - Dashboard Service
 
-## Set-up and Running
+## 📄 Folder Structure
+
+- `main.tf`: This file contains all the terraform to create the aws services.
+- `outputs.tf`: This file contains variables the script will output.
+- `variables.tf`: This file contains the list of variables used in the `main.tf` file.
+
+## 🛠️Set-up and Running
 
 You need to create a `terraform.tfvars` file which includes the following:
 ```
@@ -42,7 +48,7 @@ REPORT_ECR="XXXX"
 tf_ECR="XXXX"
 DASHBOARD_ECR="XXXX"
 
- SNS_TOPIC_PREFIX="XXXX"
+SNS_TOPIC_PREFIX="XXXX"
 SENDER_EMAIL_ADDRESS="XXXX"
 ```
 
@@ -56,7 +62,7 @@ Then run with `terraform apply`.
 
 After use, destroy with `terraform destroy`.
 
-## Architecture Diagram
+## 🏛️ Architecture Diagram
 
 This image shows the architecture diagram for this project.
 
