@@ -41,6 +41,9 @@ EPIC_ECR="XXXX"
 REPORT_ECR="XXXX"
 tf_ECR="XXXX"
 DASHBOARD_ECR="XXXX"
+
+ SNS_TOPIC_PREFIX="XXXX"
+SENDER_EMAIL_ADDRESS="XXXX"
 ```
 
 Before running this terraform script, you need to go into the [web_scraping](../web_scraping), [report](../report),[load_to_rds](../load_to_rds) and [dashboard](../dashboard) folders and follow the instructions for `Deploying to the Cloud`, which involves making the ECRs containing the Docker images. Once the ECR's have been created then the terraform can be run.
