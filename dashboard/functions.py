@@ -73,13 +73,12 @@ def create_line_chart() -> alt.Chart:
     return line_chart
 
 
-def display_game_table(show_nsfw: bool, os_selection: Optional[str], start_date: str, end_date: str, search_query: str) -> None:
+def display_game_table(show_nsfw, os_selection, start_date, end_date, search_query, sort_by):
     """Generates a table for the Games page depending on user selection and input."""
     table_data = get_game_data(
-        show_nsfw, start_date, end_date, os_selection, search_query
-    )
+        show_nsfw, start_date, end_date, os_selection, search_query)
 
-    table_data.drop('os_name', axis=1, inplace=True)
+    table_data.drop('os_name', axis=1, inplace=True)  # Drop OS name
 
     table_data = table_data.rename(
         columns={
@@ -91,20 +90,37 @@ def display_game_table(show_nsfw: bool, os_selection: Optional[str], start_date:
         }
     )
 
-    table_data['Price'] = table_data['Price'].apply(lambda x: f"£{x:.2f}")
+    table_data['Price'] = table_data['Price'].apply(
+        lambda x: f"£{x:.2f}")  # Format prices
     table_data['Price'] = table_data['Price'].replace("£0.00", "Free")
 
-    # Add clickable links to game names
+    # Apply sorting based on the 'sort_by' option
+    if sort_by == "Price (Ascending)":
+        table_data = table_data.sort_values("Price", key=lambda x: x.str.replace(
+            '£', '').replace('Free', '0').astype(float))
+    elif sort_by == "Price (Descending)":
+        table_data = table_data.sort_values("Price", key=lambda x: x.str.replace(
+            '£', '').replace('Free', '0').astype(float), ascending=False)
+    elif sort_by == "Title (A-Z)":
+        table_data = table_data.sort_values("Title", ascending=True)
+    elif sort_by == "Title (Z-A)":
+        table_data = table_data.sort_values("Title", ascending=False)
+    elif sort_by == "Date (Ascending)":
+        table_data = table_data.sort_values("Release Date", ascending=True)
+    elif sort_by == "Date (Descending)":
+        table_data = table_data.sort_values("Release Date", ascending=False)
+
+    # Add clickable links to game titles
     table_data['Title'] = table_data.apply(
         lambda row: f'<a href="{row["listing_url"]
                                 }" target="_blank">{row["Title"]}</a>',
         axis=1
     )
 
+    # Listing url not needed
     table_data.drop('listing_url', axis=1, inplace=True)
 
     html_table = table_data.to_html(escape=False, index=False)
-
     st.markdown(html_table, unsafe_allow_html=True)
 
 

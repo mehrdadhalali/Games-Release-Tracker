@@ -73,7 +73,7 @@ def test_display_game_table(mock_get_game_data):
     # To test Streamlit, we may want to test the output HTML
     with patch('streamlit.markdown') as mock_markdown:
         display_game_table(show_nsfw=True, os_selection='-All-',
-                           start_date='2020-01-01', end_date='2024-01-01', search_query='')
+                           start_date='2020-01-01', end_date='2024-01-01', search_query='', sort_by="")
         mock_markdown.assert_called_once()  # Ensure that the markdown function was called
 
 
