@@ -563,7 +563,7 @@ resource "aws_ecs_task_definition" "dashboard_task_definition" {
     }])
 }
 
-
+# create security group for dashboard
 resource "aws_security_group" "dashboard_security_group" {
   name        = "c13-lakshmibai-dashboard-sg"
   description = "Allow TCP traffic on port 8501"
