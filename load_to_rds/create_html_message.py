@@ -31,17 +31,24 @@ def create_html(games: list[dict], genre: str) -> str:
     """Creates an HTML of the games of a specific genre."""
 
     genre_formatted = format_genre_text(genre)
+
+    head = """img {max-width: 20%;max-height: 20%;}"""
+    head = put_in_tag(put_in_tag(head, "style"), "head")
+
     message = put_in_tag(f"Here are all of the newly released games of the {genre_formatted} genre:",
                          "h1")
     for game in games:
         message += put_in_tag(put_in_tag(game['title'], "h2"),
                               "a", f"href={game['url']}")
         message += put_in_tag(put_in_tag("", "img",
-                              f"src={game['img_url']} width=\"300\" height=\"300\"", is_single=True),
+                              f"src={game['img_url']}", is_single=True),
                               "a", f"href={game['url']}") + "<br>"
         message += put_in_tag(
             f"Price: {format_price(game['current_price'])}", "h2")
         message += put_in_tag(f"Genre: {', '.join(game['genres'])}", "p")
         message += put_in_tag(game['description'], "p")
-    message = put_in_tag(put_in_tag(message, "body"), "html")
+
+    message = put_in_tag(message, "body")
+    message = head + message
+    message = put_in_tag(message, "html")
     return message
