@@ -102,8 +102,10 @@ def test_get_daily_releases(mock_get_connection):
     mock_cursor.fetchall.return_value = mock_daily_releases_data.values.tolist()
     mock_get_connection.return_value.cursor.return_value = mock_cursor
 
-    result = get_daily_releases(
-        show_nsfw=True, start_date='2020-01-01', end_date='2024-01-01')
+    result = get_daily_releases(show_nsfw=True,
+                                start_date='2020-01-01',
+                                end_date='2024-01-01',
+                                os_selection='-All-')
     assert isinstance(result, pd.DataFrame)
     assert not result.empty
     assert 'release_date' in result.columns
@@ -116,8 +118,10 @@ def test_get_genre_data(mock_get_connection):
     mock_cursor.fetchall.return_value = mock_genre_data.values.tolist()
     mock_get_connection.return_value.cursor.return_value = mock_cursor
 
-    result = get_genre_data(
-        show_nsfw=True, start_date='2020-01-01', end_date='2024-01-01')
+    result = get_genre_data(show_nsfw=True, 
+                            start_date='2020-01-01', 
+                            end_date='2024-01-01', 
+                            os_selection='-All-')
     assert isinstance(result, pd.DataFrame)
     assert not result.empty
     assert 'genre_name' in result.columns
