@@ -2,9 +2,11 @@ name: Check Transform/Load
 
 on:
   push:
-    branches: [main]
+    branches: 
+      - 'load-*'
   pull_request:
-    branches: [main]
+    branches: 
+      - 'load-*'
   workflow_dispatch:
 
 permissions: write-all

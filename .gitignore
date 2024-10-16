@@ -18,3 +18,11 @@ __pycache__
 # Data
 *.csv
 *.json
+
+# Terraform
+.terraform
+.terraform.lock.hcl
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
+terraform/terraform.tfvars
+

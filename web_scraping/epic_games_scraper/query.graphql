@@ -1,0 +1,37 @@
+{
+  Catalog {
+    searchStore(
+      count: 30
+      sortBy: "releaseDate"
+      sortDir: "DESC"
+      releaseDate: "{{RELEASE_DATE}}"
+    ) {
+      elements {
+        title
+        releaseDate
+        description
+        id
+        publisherDisplayName
+        developerDisplayName
+        seller {
+          name
+        }
+        currentPrice
+        tags {
+          name
+          groupName
+        }
+        keyImages {
+          type
+          url
+        }
+        mappings {
+          pageSlug
+        }
+        categories {
+          path
+        }
+      }
+    }
+  }
+}

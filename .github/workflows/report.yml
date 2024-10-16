@@ -2,9 +2,11 @@ name: Check Report Generator
 
 on:
   push:
-    branches: [main]
+    branches: 
+      - 'report-*'
   pull_request:
-    branches: [main]
+    branches: 
+      - 'report-*'
   workflow_dispatch:
 
 permissions: write-all

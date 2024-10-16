@@ -2,9 +2,11 @@ name: Check Dashboard
 
 on:
   push:
-    branches: [main]
+    branches: 
+      - 'dashboard-*'
   pull_request:
-    branches: [main]
+    branches: 
+      - 'dashboard-*'
   workflow_dispatch:
 
 permissions: write-all
