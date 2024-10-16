@@ -29,8 +29,8 @@ def send_genre_emails(scraped_data: list[dict]):
     """Sends emails to the genre subscribers."""
 
     ses = client(service_name="ses",
-                 aws_access_key_id=ENV["AWS_ACCESS_KEY"],
-                 aws_secret_access_key=ENV["AWS_SECRET_ACCESS_KEY"])
+                 aws_access_key_id=ENV["MY_AWS_ACCESS_KEY"],
+                 aws_secret_access_key=ENV["MY_AWS_SECRET_ACCESS_KEY"])
 
     subscribers_per_genre = get_subscribers_per_genre()
 
