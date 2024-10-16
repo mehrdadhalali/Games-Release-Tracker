@@ -6,6 +6,7 @@ import pytest
 
 from upload_to_db import remove_duplicates
 from transform_game_data import has_nsfw_tags, transform_to_tuples
+from create_html_message import format_genre_text
 
 
 def test_remove_duplicates():
@@ -58,3 +59,15 @@ def test_transform_to_tuples():
                                          datetime(2020, 9, 18),
                                          True,
                                          "example.com")
+
+
+class TestCreateHtmlMessage:
+
+    @pytest.mark.parametrize("genre,formatted_genre",
+                             [("action", "Action"),
+                              ("adventure", "Adventure"),
+                              ("multiplayer", "Multiplayer"),
+                              "rpg", "RPG"])
+    def test_format_genre_text(self, genre, formatted_genre):
+
+        assert format_genre_text(genre) == formatted_genre
