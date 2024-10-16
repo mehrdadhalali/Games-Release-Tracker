@@ -89,9 +89,9 @@ def get_game_data(show_nsfw: bool, start_date: str, end_date: str, os_selection:
 
 
 @st.cache_data
-def get_daily_releases(show_nsfw: bool, start_date: str, end_date: str) -> pd.DataFrame:
+def get_daily_releases(show_nsfw: bool, start_date: str, end_date: str, os_selection: str) -> pd.DataFrame:
     """
-    Retrieves the number of games released on each platform between the chosen dates.
+    Retrieves the number of games released on each platform between the chosen dates and filters by selected OS.
     """
     query = """
     SELECT 
@@ -100,14 +100,24 @@ def get_daily_releases(show_nsfw: bool, start_date: str, end_date: str) -> pd.Da
     FROM game g
     LEFT JOIN game_listing gl ON g.game_id = gl.game_id
     LEFT JOIN platform p ON gl.platform_id = p.platform_id
+    LEFT JOIN game_os_assignment goa ON g.game_id = goa.game_id
+    LEFT JOIN operating_system os ON goa.os_id = os.os_id
     WHERE (%s OR g.is_nsfw = FALSE)
     AND g.release_date BETWEEN %s AND %s
     """
 
-    params = [show_nsfw, start_date, end_date]
+    if os_selection != "-All-":
+        query += " AND os.os_name = %s"
+        params = [show_nsfw, start_date, end_date, os_selection]
+    else:
+        params = [show_nsfw, start_date, end_date]
 
     conn = get_connection()
     cursor = conn.cursor()
+
+    if len(os_selection) == 1:
+        os_selection = [os_selection]
+
     cursor.execute(query, params)
     result = cursor.fetchall()
 
@@ -154,7 +164,6 @@ def get_daily_game_count() -> pd.DataFrame:
     cursor.execute(query)
     result = cursor.fetchall()
 
-    # Create DataFrame from the fetched result manually
     df = pd.DataFrame(result, columns=['release_date', 'total_games'])
 
     cursor.close()
@@ -163,9 +172,9 @@ def get_daily_game_count() -> pd.DataFrame:
 
 
 @st.cache_data
-def get_genre_data(show_nsfw: bool, start_date: str, end_date: str) -> pd.DataFrame:
+def get_genre_data(show_nsfw: bool, start_date: str, end_date: str, os_selection: str) -> pd.DataFrame:
     """
-    Retrieves information about the most frequent genres for releases.
+    Retrieves information about the most frequent genres for releases and filters by selected OS.
     """
     query = """
     SELECT 
@@ -174,12 +183,19 @@ def get_genre_data(show_nsfw: bool, start_date: str, end_date: str) -> pd.DataFr
     FROM game g
     LEFT JOIN game_genre_assignment ga ON g.game_id = ga.game_id
     LEFT JOIN genre ge ON ga.genre_id = ge.genre_id
+    LEFT JOIN game_os_assignment goa ON g.game_id = goa.game_id
+    LEFT JOIN operating_system os ON goa.os_id = os.os_id
     WHERE (%s OR g.is_nsfw = FALSE)
     AND g.release_date BETWEEN %s AND %s
-    GROUP BY ge.genre_name LIMIT 10;
     """
 
-    params = [show_nsfw, start_date, end_date]
+    if os_selection != "-All-":
+        query += " AND os.os_name = %s"
+        params = [show_nsfw, start_date, end_date, os_selection]
+    else:
+        params = [show_nsfw, start_date, end_date]
+
+    query += " GROUP BY ge.genre_name LIMIT 10;"
 
     conn = get_connection()
     cursor = conn.cursor()
