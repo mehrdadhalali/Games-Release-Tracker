@@ -3,6 +3,15 @@
 # pylint: disable=C0209
 
 
+def format_genre_text(genre: str) -> str:
+    """Makes genre representable in an email."""
+
+    if genre.lower() == "rpg":
+        return "RPG"
+
+    return genre.title()
+
+
 def format_price(price: int) -> str:
     """Formats the price correctly."""
 
@@ -15,7 +24,7 @@ def format_price(price: int) -> str:
 def create_text_message(games: list[dict], genre: str):
     """Creates a text format of the message we're emailing."""
 
-    message = f"Here are newly released {genre.title()} games:\n\n"
+    message = f"Here are newly released {format_genre_text(genre)} games:\n\n"
 
     for game in games:
         message += f"""{game["title"]}:

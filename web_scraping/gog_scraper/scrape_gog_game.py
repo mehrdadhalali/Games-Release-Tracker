@@ -58,6 +58,21 @@ def extract_data_from_rows(rows: list[str], label_class: str, required_label: st
     return []
 
 
+def has_nsfw_warning(game_page) -> bool:
+    """Does this game have a NSFW warning?"""
+
+    modules = game_page.find_all("p", {"class": "module"})
+
+    if len(modules) == 0:
+        return False
+
+    if any("not appropriate for all ages" in module.text
+           for module in modules):
+        return True
+
+    return False
+
+
 def get_game_data_from_url(game_url: str) -> dict:
     """Given a game's URL, returns all of its relevant data.
         The only thing that needs processing afterwards is the release date."""
@@ -74,6 +89,8 @@ def get_game_data_from_url(game_url: str) -> dict:
     genres = extract_data_from_rows(details_rows,
                                     label_class="details__category table__row-label",
                                     required_label="genre", are_links=True)
+
+    is_nsfw = has_nsfw_warning(soup)
     tags = extract_data_from_rows(details_rows,
                                   label_class="details__category table__row-label",
                                   required_label="tag", are_links=True)
@@ -96,6 +113,7 @@ def get_game_data_from_url(game_url: str) -> dict:
             "description": description,
             "img_url": image_url,
             "genres": genres,
+            "is_nsfw": is_nsfw,
             "tags": tags,
             "operating_systems": operating_systems,
             "current_price": current_price,
