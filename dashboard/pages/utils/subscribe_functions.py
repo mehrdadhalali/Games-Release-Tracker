@@ -8,6 +8,7 @@ import altair as alt
 import streamlit as st
 
 from dotenv import load_dotenv
+from boto3 import client
 
 
 load_dotenv()
@@ -152,7 +153,8 @@ def unsubscribe_user_from_all_topics(client, email):
     topics = get_sns_topics_with_prefix(client, topic_prefix)
 
     for topic_arn in topics:
-        subscription_arn = get_user_subscriptions_for_topic(client, topic_arn, email)
+        subscription_arn = get_user_subscriptions_for_topic(
+            client, topic_arn, email)
         if subscription_arn:
             unsubscribe_user_from_topic(client, subscription_arn)
             unsubscribed_topics.append(topic_arn.split(
