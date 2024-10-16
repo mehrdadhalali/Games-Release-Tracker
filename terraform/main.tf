@@ -220,6 +220,12 @@ resource "aws_lambda_function" "transform-load-lambda" {
       DB_USER=var.DB_USER
       DB_PASSWORD=var.DB_PASSWORD
       DB_PORT=var.DB_PORT
+      MY_AWS_ACCESS_KEY=var.AWS_ACCESS_KEY
+      MY_AWS_SECRET_ACCESS_KEY=var.AWS_SECRET_KEY
+      AWS_ACCOUNT_ID=var.AWS_ACCOUNT_ID
+      ECR_REPO_NAME=var.tf_ECR
+      SNS_TOPIC_PREFIX=var.SNS_PREFIX
+      SENDER_EMAIL_ADDRESS=var.SENDER_EMAIL_ADDRESS
     }
   }
 }

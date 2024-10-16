@@ -97,3 +97,13 @@ variable "DASHBOARD_ECR" {
     type = string
   
 }
+
+variable "SNS_PREFIX" {
+    type = string
+  
+}
+
+variable "SENDER_EMAIL_ADDRESS" {
+    type = string
+  
+}
