@@ -75,12 +75,12 @@ def test_listing_is_game(input_categories, expected_output):
     assert listing_is_game(input_categories) == expected_output
 
 
-@pytest.mock("extract_epic.load_graph_ql_query")
+@patch("extract_epic.load_graph_ql_query")
 def test_process_listings_unavailable_api(fake_query):
     """Tests that when the API is not available, a reasonable response is still returned from the lambda."""
-    fake_query.return_value = ""
-    with patch('extract_epic.execute_query') as fake_execute:
 
+    with patch('extract_epic.execute_query') as fake_execute:
+        fake_query.return_value = ""
         fake_execute.side_effect = TransportQueryError("Unavailable API.")
         listings = process_listings()
         needed_keys = ["platform", "listings"]
