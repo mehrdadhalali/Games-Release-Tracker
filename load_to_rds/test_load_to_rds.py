@@ -7,6 +7,8 @@ import pytest
 from upload_to_db import remove_duplicates
 from transform_game_data import has_nsfw_tags, transform_to_tuples
 from create_html_message import format_genre_text, put_in_tag
+from email_subscribers import get_games_by_genre
+from get_subscriber_emails import create_SNS_topic_object
 
 
 def test_remove_duplicates():
@@ -87,3 +89,21 @@ class TestCreateHtmlMessage:
     def test_put_in_tag_single_attrs(self):
 
         assert put_in_tag("", "tag", "attr", is_single=True) == "<tag attr> "
+
+
+def test_get_games_by_genre():
+
+    genre = "action"
+    scraped_data = [{
+        "listings": [
+            {"genres": ["action"]}
+        ]
+    },
+        {
+        "listings": [
+            {"genres": ["action"]},
+            {"genres": ["adventure"]}
+        ]
+    }]
+
+    assert len(get_games_by_genre(genre, scraped_data)) == 2
