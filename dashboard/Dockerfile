@@ -14,7 +14,7 @@ RUN python -m nltk.downloader stopwords
 COPY functions.py .
 COPY sl_queries.py . 
 COPY .streamlit/config.toml ./.streamlit
-COPY pages/Subscribe.py .
+COPY pages/Subscribe.py ./pages
 COPY pages/logo.png ./pages
 COPY pages/Games.py ./pages
 COPY pages/About.py ./pages

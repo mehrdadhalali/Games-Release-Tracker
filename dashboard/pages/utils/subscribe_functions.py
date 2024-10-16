@@ -12,7 +12,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-sns_client = client('sns', region_name=ENV["REGION"])
+sns_client = client(
+    'sns', region_name=ENV["REGION"],
+    aws_access_key_id=ENV["AWS_ACCESS_KEY"],
+    aws_secret_access_key=ENV["AWS_SECRET_KEY"])
+
 
 def connect_rds():
     """Initialize PostgreSQL connection."""
@@ -114,8 +118,8 @@ def subscribe_user_to_topics(email, selected_genres):
                 Protocol='email',
                 Endpoint=email
             )
-            st.success(f"Successfully subscribed to {
-                       genre} topic. Check your email to confirm the subscription.")
+            st.success(f"""Successfully subscribed to {
+                       genre} topic. Check your email to confirm the subscription.""")
         else:
             st.warning(f"Already subscribed to {genre}.")
 
@@ -148,8 +152,8 @@ def unsubscribe_user_from_all_topics(email):
 
     # Display success message for all unsubscribed topics
     if unsubscribed_topics:
-        st.success(f"Unsubscribed from the following topics: {
-                   ', '.join(unsubscribed_topics)}.")
+        st.success(f"""Unsubscribed from the following topics: {
+                   ', '.join(unsubscribed_topics)}.""")
     else:
         st.warning("No subscriptions found for the email.")
 
