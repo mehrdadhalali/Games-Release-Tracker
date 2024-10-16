@@ -16,7 +16,7 @@ def lambda_handler(event, session):
 
     for output in event:
 
-        data = loads(output["body"]["data"])
+        data = output["body"]["data"]
 
         if not isinstance(data, dict):
             data = loads(data)

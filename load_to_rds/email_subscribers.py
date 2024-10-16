@@ -29,8 +29,8 @@ def send_genre_emails(scraped_data: list[dict]):
     """Sends emails to the genre subscribers."""
 
     ses = client(service_name="ses",
-                 aws_access_key_id=ENV["AWS_ACCESS_KEY"],
-                 aws_secret_access_key=ENV["AWS_SECRET_ACCESS_KEY"])
+                 aws_access_key_id=ENV["MY_AWS_ACCESS_KEY"],
+                 aws_secret_access_key=ENV["MY_AWS_SECRET_ACCESS_KEY"])
 
     subscribers_per_genre = get_subscribers_per_genre()
 
@@ -40,22 +40,23 @@ def send_genre_emails(scraped_data: list[dict]):
 
             genre = item["genre"]
             genre_games = get_games_by_genre(genre, scraped_data)
-            to_send = create_html(genre_games, genre)
+            if len(genre_games) > 0:
+                to_send = create_html(genre_games, genre)
 
-            subscriber_emails = item["subscribers"]
+                subscriber_emails = item["subscribers"]
 
-            ses.send_email(
-                Source=ENV["SENDER_EMAIL_ADDRESS"],
-                Destination={"ToAddresses": subscriber_emails,
-                             "BccAddresses": [],
-                             "CcAddresses": []},
-                Message={
-                    "Subject": {
-                        "Data": f"New {format_genre_text(genre)} games for you!"
-                    },
-                    "Body": {
-                        "Html": {
-                            "Data": to_send
+                ses.send_email(
+                    Source=ENV["SENDER_EMAIL_ADDRESS"],
+                    Destination={"ToAddresses": subscriber_emails,
+                                 "BccAddresses": [],
+                                 "CcAddresses": []},
+                    Message={
+                        "Subject": {
+                            "Data": f"New {format_genre_text(genre)} games for you!"
+                        },
+                        "Body": {
+                            "Html": {
+                                "Data": to_send
+                            }
                         }
-                    }
-                })
+                    })
