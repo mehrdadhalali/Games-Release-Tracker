@@ -7,7 +7,6 @@ from datetime import datetime
 
 import streamlit as st
 import nltk
-from dotenv import load_dotenv
 
 from functions import (create_donut_chart, create_genre_bar_chart, create_line_chart,
                        create_os_bar_chart, create_platform_bar_chart,
@@ -43,7 +42,7 @@ if __name__ == "__main__":
         )
     with cols[2]:
         today = datetime.now().date()
-        min_date = datetime(2024, 10, 7).date()
+        min_date = datetime(2024, 9, 30).date()
         date_range = st.date_input(
             "Select date range:",
             value=[min_date, today],

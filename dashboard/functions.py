@@ -95,19 +95,19 @@ def display_game_table(show_nsfw, os_selection, start_date, end_date, search_que
     table_data['Price'] = table_data['Price'].replace("£0.00", "Free")
 
     # Apply sorting based on the 'sort_by' option
-    if sort_by == "Price (Ascending)":
+    if sort_by == "Price (Lowest)":
         table_data = table_data.sort_values("Price", key=lambda x: x.str.replace(
             '£', '').replace('Free', '0').astype(float))
-    elif sort_by == "Price (Descending)":
+    elif sort_by == "Price (Highest)":
         table_data = table_data.sort_values("Price", key=lambda x: x.str.replace(
             '£', '').replace('Free', '0').astype(float), ascending=False)
     elif sort_by == "Title (A-Z)":
         table_data = table_data.sort_values("Title", ascending=True)
     elif sort_by == "Title (Z-A)":
         table_data = table_data.sort_values("Title", ascending=False)
-    elif sort_by == "Date (Ascending)":
+    elif sort_by == "Date (Oldest)":
         table_data = table_data.sort_values("Release Date", ascending=True)
-    elif sort_by == "Date (Descending)":
+    elif sort_by == "Date (Newest)":
         table_data = table_data.sort_values("Release Date", ascending=False)
 
     # Add clickable links to game titles
@@ -232,20 +232,22 @@ def create_genre_bar_chart(show_nsfw: bool, os_selection: list[str], start_date:
     return genre_bar_graph
 
 
-
 def preprocess_descriptions(descriptions: list[str]) -> dict[str, int]:
     """
-    Preprocess game descriptions: lowercasing, removing punctuation, filtering stopwords.
+    Preprocess game descriptions: lowercasing, removing punctuation, filtering stopwords,
+    and excluding specific words.
     """
     stop_words = set(nltk_stopwords.words('english'))
+    custom_excluded_words = {"game", "play","new", "must", "get", "one", 
+                             "set", "genre", "players", "make", "full", "use"}
 
     cleaned_words = []
     for desc in descriptions:
         # Remove punctuation and tokenize words
         words = word_tokenize(re.sub(r'[^\w\s]', '', desc.lower()))
-        # Filter out stop words and words shorter than 3 characters
+        # Filter out stop words, custom excluded words, and words shorter than 3 characters
         words = [
-            word for word in words if word != "game" and word not in stop_words and len(word) > 2]
+            word for word in words if word not in stop_words and word not in custom_excluded_words and len(word) > 2]
         cleaned_words.extend(words)
 
     word_counts = Counter(cleaned_words)

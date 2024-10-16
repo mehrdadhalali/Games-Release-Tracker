@@ -33,7 +33,7 @@ with cols[1]:
     )
 with cols[2]:
     today = datetime.now().date()
-    min_date = datetime(2024, 10, 7).date()
+    min_date = datetime(2024, 9, 30).date()
     date_range = st.date_input(
         "Select date range:",
         value=[min_date, today],
@@ -54,7 +54,7 @@ with cols[0]:
 with cols[1]:
     # Create dropdown for sorting
     sort_by = st.selectbox("Sort by:", options=[
-        "", "Price (Ascending)", "Price (Descending)", "Title (A-Z)", "Title (Z-A)", "Date (Ascending)", "Date (Descending)"])
+        "", "Price (Lowest)", "Price (Highest)", "Title (A-Z)", "Title (Z-A)", "Date (Newest)", "Date (Oldest)"])
 
 # Game releases table
 display_game_table(show_nsfw, os_selection, start_date,
