@@ -1,7 +1,10 @@
 # pylint: skip-file
 
 import pytest
-from extract_epic import format_release_date, get_operating_systems, get_genres, listing_is_game
+from unittest.mock import patch
+from extract_epic import format_release_date, get_operating_systems, get_genres, listing_is_game, process_listings
+from gql import Client, gql
+from gql.transport.exceptions import TransportQueryError
 
 
 @pytest.mark.parametrize("input_date, expected_output", [
@@ -71,3 +74,10 @@ def test_get_genres(input_tags, expected_output):
 ])
 def test_listing_is_game(input_categories, expected_output):
     assert listing_is_game(input_categories) == expected_output
+
+
+@patch("extract_epic.load_graph_ql_query")
+def test_process_listings_unavailable_api(fake_load_ql):
+    fake_load_ql.return_value = ""
+    with pytest.raises(Exception):
+        process_listings()
