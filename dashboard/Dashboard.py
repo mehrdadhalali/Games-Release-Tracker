@@ -33,7 +33,6 @@ st.markdown(
 
 if __name__ == "__main__":
     # User input for OS selection, date range, and NSFW checkbox
-    load_dotenv()
     cols = st.columns([2, 0.75, 1, 0.35])
     with cols[0]:
         st.title("Games Tracker")
