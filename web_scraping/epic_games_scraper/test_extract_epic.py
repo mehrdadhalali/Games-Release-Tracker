@@ -78,11 +78,11 @@ def test_format_release_date(input_date, expected_output):
 @pytest.mark.parametrize("input_tags, expected_output", [
     ([{"name": "Windows", "groupName": "platform"},
       {"name": "Linux", "groupName": "platform"},
-      {"name": "MacOS", "groupName": "platform"}], ["Windows", "Linux", "MacOS"]),
+      {"name": "MacOS", "groupName": "platform"}], ["Windows", "Linux", "Mac"]),
     ([{"name": "Windows", "groupName": "platform"},
       {"name": "Ubuntu", "groupName": "Linux"},
       {"name": "MacOS", "groupName": "platform"},
-      {"name": "iOS", "groupName": "platform"}], ["Windows", "MacOS", "iOS"]),
+      {"name": "iOS", "groupName": "platform"}], ["Windows", "Mac", "iOS"]),
     ([{"name": "Ubuntu", "groupName": "Linux"},
       {"name": "iOS", "groupName": "mobile"}], []),
     ([], []),

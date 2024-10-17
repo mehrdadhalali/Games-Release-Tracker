@@ -40,7 +40,9 @@ def get_listings_from_json(json_str: str) -> list[dict]:
 
 def get_operating_systems(tags: list[dict]):
     """Returns a list of operating systems from a list of tag dicts."""
-    return [tag['name'] for tag in tags if tag.get('groupName') == "platform"]
+    platforms = [tag['name'].replace("MacOS", "Mac").replace("Mac OS", "Mac")
+                 for tag in tags if tag.get('groupName') == "platform"]
+    return platforms
 
 
 def get_genres(tags: list[dict]):
