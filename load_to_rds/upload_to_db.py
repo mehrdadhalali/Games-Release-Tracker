@@ -1,6 +1,5 @@
 """This script is for uploading the listings to the database."""
 
-from json import loads
 from datetime import datetime
 
 from psycopg2.extensions import connection
@@ -17,14 +16,14 @@ def get_today() -> datetime:
     return datetime(now.year, now.month, now.day)
 
 
-def remove_duplicates(listings_list: list[dict], already_scraped: list[str]) -> list[dict]:
+def remove_duplicates(scraped_data: list[dict], already_scraped: list[str]) -> list[dict]:
     """Removes any game that is already scraped."""
 
-    for listings in listings_list:
+    for listings in scraped_data:
         listings["listings"] = [game for game in listings["listings"]
                                 if game["url"] not in already_scraped]
 
-    return listings_list
+    return scraped_data
 
 
 def update_genres(new_genres: list[str], conn: connection) -> dict:
@@ -34,7 +33,6 @@ def update_genres(new_genres: list[str], conn: connection) -> dict:
     with conn.cursor() as curs:
         execute_values(curs, query, new_genres)
         rows = curs.fetchall()
-    conn.commit()
 
     return {row["genre_name"]: row["genre_id"]
             for row in rows}
@@ -48,7 +46,6 @@ def upload_game(game: dict, conn: connection) -> int:
                         (game_title, game_description, release_date, is_NSFW, image_URL)
                         VALUES (%s,%s,%s,%s,%s) RETURNING game_id;""",
                      transform_to_tuples(game))
-        conn.commit()
         rows = curs.fetchone()
 
     return rows
@@ -65,7 +62,6 @@ def upload_listing(game: dict, game_id: int, platform: str,
                         (game_id, platform_id, release_price, listing_url)
                         VALUES (%s,%s,%s,%s);""",
                      (game_id, platform_id, game["current_price"], game["url"]))
-        conn.commit()
 
 
 def upload_genre(game_id: int, genres: list[str],
@@ -77,7 +73,8 @@ def upload_genre(game_id: int, genres: list[str],
     if len(new_genres) > 0:
 
         new_genre_map = update_genres(new_genres, conn)
-        genre_to_id.update(new_genre_map)
+        for key, value in new_genre_map.items():
+            genre_to_id[key.lower()] = value
 
     upload_tuples = [(game_id, genre_to_id[genre.lower()])
                      for genre in genres]
@@ -87,7 +84,6 @@ def upload_genre(game_id: int, genres: list[str],
 
     with conn.cursor() as curs:
         execute_values(curs, query, upload_tuples)
-    conn.commit()
 
 
 def upload_os(game_id: int, oss: list[str],
@@ -102,7 +98,6 @@ def upload_os(game_id: int, oss: list[str],
 
     with conn.cursor() as curs:
         execute_values(curs, query, upload_tuples)
-    conn.commit()
 
 
 def upload_entire_listing_to_database(game: dict, platform: str,
@@ -117,6 +112,7 @@ def upload_entire_listing_to_database(game: dict, platform: str,
     upload_listing(game, game_id, platform, platform_to_id, conn)
     upload_genre(game_id, game["genres"], genre_to_id, conn)
     upload_os(game_id, game["operating_systems"], os_to_id, conn)
+    conn.commit()
 
 
 def upload_all_listings_to_database(json_data: dict, maps: list[dict], conn: connection):
@@ -126,8 +122,8 @@ def upload_all_listings_to_database(json_data: dict, maps: list[dict], conn: con
     for listing in json_data["listings"]:
         upload_entire_listing_to_database(listing, platform, maps, conn)
 
-    print(f"Inserted {len(json_data["listings"])
-                      } listings from {platform}.")
+    print(f"""Inserted {len(json_data["listings"])
+                      } listings from {platform}.""")
 
 
 def load_to_db(all_scraped_data: list):
@@ -149,8 +145,3 @@ def load_to_db(all_scraped_data: list):
         upload_all_listings_to_database(dataset, maps, conn)
 
     conn.close()
-
-
-if __name__ == "__main__":
-
-    load_to_db()

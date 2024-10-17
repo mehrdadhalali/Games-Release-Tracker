@@ -1,5 +1,3 @@
-# pylint: disable=C0103
-# pylint: disable=W0621
 """
 This is the main dashboard for the Games Tracker Streamlit application.
 It includes data visualisations on the information collected from Steam, GOG and Epic,
@@ -10,11 +8,14 @@ from datetime import datetime
 import streamlit as st
 import nltk
 
-from functions import create_donut_chart, create_genre_bar_chart, create_line_chart, create_os_bar_chart, create_platform_bar_chart, create_release_line_chart, display_game_table, create_word_cloud, preprocess_descriptions
+from functions import (create_donut_chart, create_genre_bar_chart, create_line_chart,
+                       create_os_bar_chart, create_platform_bar_chart,
+                       create_release_line_chart, create_word_cloud, preprocess_descriptions)
 from sl_queries import get_game_descriptions
 
 # Download the 'punkt' tokenizer model
 nltk.download('punkt_tab')
+nltk.download('stopwords')
 
 # Page configuration
 st.set_page_config(layout="wide")
@@ -41,7 +42,7 @@ if __name__ == "__main__":
         )
     with cols[2]:
         today = datetime.now().date()
-        min_date = datetime(2024, 10, 7).date()
+        min_date = datetime(2024, 10, 1).date()
         date_range = st.date_input(
             "Select date range:",
             value=[min_date, today],
@@ -70,15 +71,15 @@ if __name__ == "__main__":
     if start_date != end_date:
         cols = st.columns(2)
         with cols[0]:
-            st.altair_chart(create_release_line_chart(show_nsfw, start_date, end_date),
+            st.altair_chart(create_release_line_chart(show_nsfw, os_selection, start_date, end_date),
                             use_container_width=True)
         with cols[1]:
-            st.altair_chart(create_genre_bar_chart(show_nsfw, start_date, end_date),
+            st.altair_chart(create_genre_bar_chart(show_nsfw, os_selection, start_date, end_date),
                             use_container_width=True)
     else:
         cols = st.columns([0.5, 1, 0.5])
         with cols[1]:
-            st.altair_chart(create_genre_bar_chart(show_nsfw, start_date, end_date),
+            st.altair_chart(create_genre_bar_chart(show_nsfw, os_selection, start_date, end_date),
                             use_container_width=True)
 
     # All time stats
@@ -87,7 +88,7 @@ if __name__ == "__main__":
         "<style>.line { border: 0.5px solid; margin: 0; }</style><div class='line'></div>",
         unsafe_allow_html=True)
 
-    cols = st.columns(2)
+    cols = st.columns([2, 3])
     with cols[0]:
         st.altair_chart(create_donut_chart(), use_container_width=True)
     with cols[1]:
@@ -97,10 +98,9 @@ if __name__ == "__main__":
     st.markdown(
         "<style>.line { border: 0.5px solid; margin: 0; }</style><div class='line'></div>",
         unsafe_allow_html=True)
-    
+
     descriptions = get_game_descriptions(
-            show_nsfw, start_date, end_date, os_selection)
+        show_nsfw, start_date, end_date, os_selection)
     word_counts = preprocess_descriptions(descriptions)
     word_cloud_fig = create_word_cloud(word_counts)
     st.pyplot(word_cloud_fig, use_container_width=True)
-    
