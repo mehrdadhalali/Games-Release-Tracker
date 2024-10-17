@@ -16,17 +16,21 @@ def get_game_urls_from_page(page_html: str) -> list[str]:
     return [link.get("href") for link in links]
 
 
-def get_games_for_the_day(day: datetime = datetime.today(), page_number: int = 1) -> dict:
+def get_games_for_the_day(day_time: datetime = datetime.today(),
+                          page_number: int = 1) -> dict:
     """Get all of the details of the games for a given day."""
+
+    day = day_time.date()
+
     url = BASE_URL + str(page_number)
     html = get_html(url)
     game_urls = get_game_urls_from_page(html)
     game_details_list = []
     for game_url in game_urls:
         game_details = get_game_data_from_url(game_url)
-        if game_details["release_date"] < day:
+        if game_details["release_date"].date() < day:
             break
-        if game_details["release_date"] == day:
+        if game_details["release_date"].date() == day:
             game_details["release_date"] = datetime.strftime(
                 game_details["release_date"],
                 "%d/%m/%Y")
@@ -36,3 +40,7 @@ def get_games_for_the_day(day: datetime = datetime.today(), page_number: int = 1
         "platform": "gog",
         "listings": game_details_list
     }
+
+
+if __name__ == "__main__":
+    print(get_games_for_the_day())
