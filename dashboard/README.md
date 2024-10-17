@@ -1,4 +1,4 @@
-# Games Tracker Dashboard
+# 📈 Games Tracker Dashboard
 
 This dashboard is designed to provide visualisations and insights into game releases from popular platforms such as Steam, GOG, and Epic Games. Users can track game releases, subscribe to updates, and explore trends based on operating systems, genres, and more.
 
@@ -9,13 +9,13 @@ The dashboard is geared toward:
 
 The dashboard is built using Streamlit, allowing for interactive and responsive visualisations that help users explore trends across platforms.
 
-## Features
+## ✨ Features
 
 - Visualise game releases across platforms with customizable filters.
 - Subscribe to weekly reports and genre-specific game updates via email.
 - Explore genre popularity, operating system trends, and more.
 
-## Wireframe
+## 📝 Wireframe
 
 1. **Dashboard** (graphs that will be customised depending on user filters)
 
@@ -33,9 +33,7 @@ The dashboard is built using Streamlit, allowing for interactive and responsive 
 
 ![Subscribe](wireframe_subscribe.png)
 
-## Installation and Setup
-
-### Repository Structure
+## 📄 Repository Structure
 
 The application files are structured as follows:
 
@@ -48,6 +46,8 @@ The application files are structured as follows:
     - `Games.py`: Displays a searchable table of games.
     - `Subscribe.py`: Subscription page to manage user notifications.
     - `pages/utils/subscribe_functions.py`: Utility functions for subscribing/unsubscribing users.
+
+## ⚙️ Installation and Setup
 
 ### Environment Variables
 
@@ -112,14 +112,19 @@ bash push-to-ecr.sh
 docker run -p 8501:8501 games-tracker-dashboard
 ```
 
-## Customisation
+## 🖥 Live Dashboard Preview
+
+![Live Dashboard 1](print_dashboard_1.png)
+![Live Dashboard 2](print_dashboard_2.png)
+
+## 🛠️ Customisation
 
 You can adjust the dashboard by:
 
 - Modifying queries in `sl_queries.py` to fetch different game release data.
 - Customizing charts in `functions.py` to display additional insights or change layouts.
 
-## Ensure Consistency with AWS Configuration
+## ✔ Ensure Consistency with AWS Configuration
 Before running the dashboard, ensure that all AWS-related configurations in the repository match your AWS setup. This includes SNS topic names, RDS credentials, and any other AWS resources used within the application.
 
 - SNS Topics: Confirm that the topic names specified in the code match the SNS topics you've created in your AWS account.
