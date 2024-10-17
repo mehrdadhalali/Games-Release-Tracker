@@ -5,6 +5,7 @@ from datetime import datetime
 
 from gql import Client, gql
 from gql.transport.aiohttp import AIOHTTPTransport
+from gql.transport.exceptions import TransportQueryError
 
 EPIC_URL = "https://graphql.epicgames.com/graphql"
 
@@ -114,11 +115,15 @@ def write_json_to_file(json_str: str, file_name: str):
 
 def process_listings(save_to_file: bool = False) -> None:
     """Main function to process listings. Optionally saves to a JSON file locally."""
-    ql_query = load_graph_ql_query("query.graphql")
-    response = execute_query(ql_query)
-    all_listings = get_listings_from_json(response)
-    game_listings = [listing for listing in all_listings
-                     if listing_is_game(listing['categories'])]
+    try:
+        ql_query = load_graph_ql_query("query.graphql")
+        response = execute_query(ql_query)
+        all_listings = get_listings_from_json(response)
+        game_listings = [listing for listing in all_listings
+                         if listing_is_game(listing['categories'])]
+    except (TransportQueryError):
+        game_listings = []
+
     parsed = parse_listings(game_listings)
     if save_to_file:
         write_json_to_file(dumps(parsed), 'sample_output.json')

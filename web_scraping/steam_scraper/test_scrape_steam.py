@@ -3,10 +3,102 @@
 # pylint: skip-file
 
 from unittest import mock
+from bs4 import BeautifulSoup
+from datetime import datetime
 
 import pytest
 
-from scrape_steam import load_page_source, format_price, get_steam_app_url
+from scrape_steam import (load_page_source, format_price, get_steam_app_url, parse_release_date,
+                          scrape_game_description, scrape_game_tags, scrape_game_nsfw, scrape_game_genres,
+                          scrape_game_operating_systems)
+
+
+@pytest.mark.parametrize("html, expected", [
+    ('<span class="platform_img win"></span>', ['Windows']),
+    ('<span class="platform_img mac"></span>', ['Mac']),
+    ('<span class="platform_img linux"></span>', ['Linux']),
+    ('<span class="platform_img win"></span><span class="platform_img mac"></span>',
+     ['Windows', 'Mac']),
+    ('<span class="platform_img win"></span><span class="platform_img linux"></span><span class="platform_img mac"></span>',
+     ['Windows', 'Linux', 'Mac']),
+    ('<span class="platform_img unknown"></span>', []),
+    ('<div class="platform_img"></div>', []),
+    ('', [])
+])
+def test_scrape_game_operating_systems(html, expected):
+    soup = BeautifulSoup(html, 'html.parser')
+    assert sorted(scrape_game_operating_systems(soup)) == sorted(expected)
+
+
+@pytest.mark.parametrize("html, expected", [
+    ('<div id="genresAndManufacturer"><a href="/genre/action">Action</a><a href="/genre/adventure">Adventure</a></div>',
+     ['Action', 'Adventure']),
+    ('<div id="genresAndManufacturer"><a href="/genre/rpg">RPG</a><a href="/other">Other</a></div>',
+     ['RPG']),
+    ('<div id="genresAndManufacturer"><a href="/genre/strategy"> Strategy </a></div>',
+     ['Strategy']),
+    ('<div id="genresAndManufacturer"></div>', [])
+])
+def test_scrape_game_genres(html, expected):
+    soup = BeautifulSoup(html, 'html.parser')
+    assert scrape_game_genres(soup) == expected
+
+
+@pytest.mark.parametrize("html, expected", [
+    ('<h2>Mature Content</h2>', True),
+    ('<h2>Contains Mature content</h2>', True),
+    ('<h2>Violence</h2><h2>Mature Content</h2>', True),
+    ('<h2>Violence</h2><h2>Blood</h2>', False),
+    ('<h2></h2>', False),
+    ('', False)
+])
+def test_scrape_game_nsfw(html, expected):
+    soup = BeautifulSoup(html, 'html.parser')
+    assert scrape_game_nsfw(soup) == expected
+
+
+@pytest.mark.parametrize("html, expected", [
+    ('<a class="app_tag">Singleplayer</a><a class="app_tag">Adventure</a>',
+     ['Singleplayer', 'Adventure']),
+    ('<a class="app_tag"> RPG </a><a class="app_tag">Strategy</a>',
+     ['RPG', 'Strategy']),
+    ('<a class="app_tag">Multiplayer</a>', ['Multiplayer']),
+    ('<div class="no_tags"></div>', []),
+    ('', [])
+])
+def test_scrape_game_tags(html, expected):
+    soup = BeautifulSoup(html, 'html.parser')
+    assert scrape_game_tags(soup) == expected
+
+
+@pytest.mark.parametrize("html, expected", [
+    ('<div class="game_description_snippet">This is a great game.</div>',
+     'This is a great game.'),
+    ('<div class="game_description_snippet"> This is not a great game! </div>',
+     'This is not a great game!'),
+    ('<div class="game_description_snippet"></div>', ''),
+    ('<div></div>', 'No description available.'),
+    ('', 'No description available.')
+])
+def test_scrape_game_description(html, expected):
+    """Tests that the scrape game description function can handle a range of inputs."""
+    soup = BeautifulSoup(html, 'html.parser')
+    assert scrape_game_description(soup) == expected
+
+
+@pytest.mark.parametrize("html, expected", [
+    ('<div class="search_released">13 October, 2020</div>', datetime(2020, 10, 13)),
+    ('<div class="search_released">October 2020</div>', datetime(2020, 10, 1)),
+    ('<div class="search_released">13 Oct, 2020</div>', datetime(2020, 10, 13)),
+    ('<div class="search_released">2020-10-13</div>', datetime(2020, 10, 13)),
+    ('<div class="search_released"></div>', None),
+    ('<div></div>', None),
+    ('', None)
+])
+def test_parse_release_date(html, expected):
+    """Tests that the parse release date is capable of parsing a range of different date strings."""
+    soup = BeautifulSoup(html, 'html.parser')
+    assert parse_release_date(soup) == expected
 
 
 @pytest.mark.parametrize("price_str, expected", [

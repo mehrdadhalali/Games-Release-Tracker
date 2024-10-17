@@ -6,6 +6,9 @@ import pytest
 
 from upload_to_db import remove_duplicates
 from transform_game_data import has_nsfw_tags, transform_to_tuples
+from create_html_message import format_genre_text, put_in_tag
+from email_subscribers import get_games_by_genre
+from get_subscriber_emails import create_SNS_topic_object
 
 
 def test_remove_duplicates():
@@ -58,3 +61,49 @@ def test_transform_to_tuples():
                                          datetime(2020, 9, 18),
                                          True,
                                          "example.com")
+
+
+class TestCreateHtmlMessage:
+
+    @pytest.mark.parametrize("genre,formatted_genre",
+                             [("action", "Action"),
+                              ("adventure", "Adventure"),
+                              ("multiplayer", "Multiplayer"),
+                              ("rpg", "RPG")])
+    def test_format_genre_text(self, genre, formatted_genre):
+
+        assert format_genre_text(genre) == formatted_genre
+
+    def test_put_in_tag_required_input_only(self):
+
+        assert put_in_tag("body", "tag") == "<tag > body</tag>"
+
+    def test_put_in_tag_attrs(self):
+
+        assert put_in_tag("body", "tag", "attr") == "<tag attr> body</tag>"
+
+    def test_put_in_tag_single(self):
+
+        assert put_in_tag("", "tag", is_single=True) == "<tag > "
+
+    def test_put_in_tag_single_attrs(self):
+
+        assert put_in_tag("", "tag", "attr", is_single=True) == "<tag attr> "
+
+
+def test_get_games_by_genre():
+
+    genre = "action"
+    scraped_data = [{
+        "listings": [
+            {"genres": ["action"]}
+        ]
+    },
+        {
+        "listings": [
+            {"genres": ["action"]},
+            {"genres": ["adventure"]}
+        ]
+    }]
+
+    assert len(get_games_by_genre(genre, scraped_data)) == 2

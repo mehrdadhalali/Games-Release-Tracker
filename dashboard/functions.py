@@ -2,7 +2,7 @@
 
 import re
 from collections import Counter
-import numpy as np
+from typing import Optional
 
 import streamlit as st
 import pandas as pd
@@ -18,7 +18,7 @@ COLOURS = ['#6a0dad', '#A26ED5', '#3b5998',
            '#5780d9', '#a80dad', '#e426eb', '#0539f7']
 
 
-def create_donut_chart():
+def create_donut_chart() -> alt.Chart:
     """Creates a donut chart about weekday releases."""
     release_data = get_weekdays_data()
     release_data['release_date'] = pd.to_datetime(
@@ -44,14 +44,15 @@ def create_donut_chart():
         title=alt.TitleParams(
             text='Distribution of Game Releases by Weekday',
             anchor='end',
-            fontSize=17
+            fontSize=16
         )
     )
 
     return donut_chart
 
 
-def create_line_chart():
+def create_line_chart() -> alt.Chart:
+    """Create a line chart about total all time game releases over time."""
     daily_game_data = get_daily_game_count()
     daily_game_data['release_date'] = pd.to_datetime(
         daily_game_data['release_date'])
@@ -72,37 +73,58 @@ def create_line_chart():
     return line_chart
 
 
-def display_game_table(show_nsfw, os_selection, start_date, end_date, search_query):
+def display_game_table(show_nsfw, os_selection, start_date, end_date, search_query, sort_by):
+    """Generates a table for the Games page depending on user selection and input."""
     table_data = get_game_data(
         show_nsfw, start_date, end_date, os_selection, search_query)
 
-    table_data.drop('os_name', axis=1, inplace=True)
-    # Rename columns to make them more readable
+    table_data.drop('os_name', axis=1, inplace=True)  # Drop OS name
+
     table_data = table_data.rename(
         columns={
             'game_name': 'Title',
             'game_genres': 'Genres',
             'release_date': 'Release Date',
             'platform': 'Platform',
-            'release_price': 'Price',
-            'listing_url': 'Listing URL'  # Ensure listing_url is included for hyperlinks
+            'release_price': 'Price'
         }
     )
 
-    # Convert price from pennies to pounds and format it
-    table_data['Price'] = table_data['Price'].apply(lambda x: f"£{x:.2f}")
+    table_data['Price'] = table_data['Price'].apply(
+        lambda x: f"£{x:.2f}")  # Format prices
     table_data['Price'] = table_data['Price'].replace("£0.00", "Free")
 
-    st.dataframe(
-        table_data,
-        column_config={
-            "Listing URL": st.column_config.LinkColumn()  # Make the Listing URL clickable
-        },
-        use_container_width=True
+    # Apply sorting based on the 'sort_by' option
+    if sort_by == "Price (Lowest)":
+        table_data = table_data.sort_values("Price", key=lambda x: x.str.replace(
+            '£', '').replace('Free', '0').astype(float))
+    elif sort_by == "Price (Highest)":
+        table_data = table_data.sort_values("Price", key=lambda x: x.str.replace(
+            '£', '').replace('Free', '0').astype(float), ascending=False)
+    elif sort_by == "Title (A-Z)":
+        table_data = table_data.sort_values("Title", ascending=True)
+    elif sort_by == "Title (Z-A)":
+        table_data = table_data.sort_values("Title", ascending=False)
+    elif sort_by == "Date (Oldest)":
+        table_data = table_data.sort_values("Release Date", ascending=True)
+    elif sort_by == "Date (Newest)":
+        table_data = table_data.sort_values("Release Date", ascending=False)
+
+    # Add clickable links to game titles
+    table_data['Title'] = table_data.apply(
+        lambda row: f"""<a href="{row["listing_url"]
+                                  }" target="_blank">{row["Title"]}</a>""",
+        axis=1
     )
 
+    # Listing url not needed
+    table_data.drop('listing_url', axis=1, inplace=True)
 
-def create_platform_bar_chart(os_selection, start_date, end_date, show_nsfw):
+    html_table = table_data.to_html(escape=False, index=False)
+    st.markdown(html_table, unsafe_allow_html=True)
+
+
+def create_platform_bar_chart(os_selection: Optional[str], start_date: str, end_date: str, show_nsfw: bool) -> alt.Chart:
     """Chart for the number of games released on each platform."""
     game_data = get_game_data(show_nsfw, start_date, end_date, os_selection)
 
@@ -127,7 +149,7 @@ def create_platform_bar_chart(os_selection, start_date, end_date, show_nsfw):
     return bar_chart
 
 
-def create_os_bar_chart(show_nsfw, os_selection, start_date, end_date):
+def create_os_bar_chart(show_nsfw: bool, os_selection: Optional[str], start_date: str, end_date: str) -> alt.Chart:
     """Bar chart for releases per operating system."""
     # Get the game data based on the selected filters
     game_data = get_game_data(show_nsfw, start_date, end_date, os_selection)
@@ -158,9 +180,10 @@ def create_os_bar_chart(show_nsfw, os_selection, start_date, end_date):
     return os_bar_chart
 
 
-def create_release_line_chart(show_nsfw, start_date, end_date):
-    """Line chart for platform releases over time."""
-    daily_data = get_daily_releases(show_nsfw, start_date, end_date)
+def create_release_line_chart(show_nsfw: bool, os_selection: list[str], start_date: str, end_date: str) -> Optional[alt.Chart]:
+    """Line chart for platform releases over time with OS filtering."""
+    daily_data = get_daily_releases(
+        show_nsfw, start_date, end_date, os_selection)
 
     # Check if start and end date are the same
     if start_date == end_date:
@@ -189,9 +212,9 @@ def create_release_line_chart(show_nsfw, start_date, end_date):
     return line_chart
 
 
-def create_genre_bar_chart(show_nsfw, start_date, end_date):
-    """Creates a horizontal bar chart for genre popularity."""
-    genre_data = get_genre_data(show_nsfw, start_date, end_date)
+def create_genre_bar_chart(show_nsfw: bool, os_selection: list[str], start_date: str, end_date: str) -> alt.Chart:
+    """Creates a horizontal bar chart for genre popularity with OS filtering."""
+    genre_data = get_genre_data(show_nsfw, start_date, end_date, os_selection)
 
     genre_bar_graph = alt.Chart(genre_data).mark_bar(color=COLOURS[0]).encode(
         # Sort by x in descending order
@@ -209,19 +232,22 @@ def create_genre_bar_chart(show_nsfw, start_date, end_date):
     return genre_bar_graph
 
 
-def preprocess_descriptions(descriptions):
+def preprocess_descriptions(descriptions: list[str]) -> dict[str, int]:
     """
-    Preprocess game descriptions: lowercasing, removing punctuation, filtering stopwords.
+    Preprocess game descriptions: lowercasing, removing punctuation, filtering stopwords,
+    and excluding specific words.
     """
     stop_words = set(nltk_stopwords.words('english'))
+    custom_excluded_words = {"game", "play","new", "must", "get", "one", 
+                             "set", "genre", "players", "make", "full", "use"}
 
     cleaned_words = []
     for desc in descriptions:
         # Remove punctuation and tokenize words
         words = word_tokenize(re.sub(r'[^\w\s]', '', desc.lower()))
-        # Filter out stop words and words shorter than 3 characters
+        # Filter out stop words, custom excluded words, and words shorter than 3 characters
         words = [
-            word for word in words if word != "game" and word not in stop_words and len(word) > 2]
+            word for word in words if word not in stop_words and word not in custom_excluded_words and len(word) > 2]
         cleaned_words.extend(words)
 
     word_counts = Counter(cleaned_words)

@@ -1,7 +1,65 @@
 # pylint: skip-file
 
 import pytest
-from extract_epic import format_release_date, get_operating_systems, get_genres, listing_is_game
+from unittest.mock import patch, MagicMock
+from extract_epic import format_release_date, get_operating_systems, get_genres, listing_is_game, process_listings
+from gql.transport.exceptions import TransportQueryError
+from extract_epic import (format_release_date, get_operating_systems, get_genres, listing_is_game,
+                          get_listings_from_json, get_features, get_game_url, get_listing_image)
+
+
+@pytest.mark.parametrize("image_list, expected", [
+    ([{"type": "Thumbnail", "url": "https://example.com/image1.jpg"}, {"type": "Cover", "url": "https://example.com/image2.jpg"}],
+     "https://example.com/image1.jpg"),
+    ([{"type": "Cover", "url": "https://example.com/image2.jpg"}, {"type": "Thumbnail", "url": "https://example.com/image3.jpg"}],
+     "https://example.com/image3.jpg"),
+    ([{"type": "Cover", "url": "https://example.com/image2.jpg"}],
+     ""),
+    ([{"type": "Thumbnail", "url": ""}],
+     ""),
+    ([], "")
+])
+def test_get_listing_image(image_list, expected):
+    assert get_listing_image(image_list) == expected
+
+
+@pytest.mark.parametrize("mappings, expected", [
+    ([{"pageSlug": "awesome-game"}],
+     "https://store.epicgames.com/en-US/p/awesome-game"),
+    ([{"pageSlug": "cool-game"}],
+     "https://store.epicgames.com/en-US/p/cool-game"),
+    ([{"pageSlug": "game-with-dashes"}],
+     "https://store.epicgames.com/en-US/p/game-with-dashes"),
+])
+def test_get_game_url(mappings, expected):
+    assert get_game_url(mappings) == expected
+
+
+@pytest.mark.parametrize("tags, expected", [
+    ([{"name": "Multiplayer", "groupName": "feature"}, {"name": "Co-op", "groupName": "feature"}],
+     ["Multiplayer", "Co-op"]),
+    ([{"name": "Single Player", "groupName": "feature"}, {"name": "RPG", "groupName": "genre"}],
+     ["Single Player"]),
+    ([{"name": "Strategy", "groupName": "genre"}, {"name": "Action", "groupName": "genre"}],
+     []),
+    ([{"name": "Cross-Platform", "groupName": "feature"}],
+     ["Cross-Platform"]),
+    ([], [])
+])
+def test_get_features(tags, expected):
+    assert get_features(tags) == expected
+
+
+@pytest.mark.parametrize("json_str, expected", [
+    ('{"Catalog": {"searchStore": {"elements": [{"id": 1, "name": "Game 1"}, {"id": 2, "name": "Game 2"}]}}}',
+     [{"id": 1, "name": "Game 1"}, {"id": 2, "name": "Game 2"}]),
+    ('{"Catalog": {"searchStore": {"elements": []}}}', []),
+    ('{"Catalog": {"searchStore": {"elements": [{"id": 3, "name": "Game 3"}]}}}',
+     [{"id": 3, "name": "Game 3"}]),
+    ('{"Catalog": {"searchStore": {"elements": null}}}', None),
+])
+def test_get_listings_from_json(json_str, expected):
+    assert get_listings_from_json(json_str) == expected
 
 
 @pytest.mark.parametrize("input_date, expected_output", [
@@ -71,3 +129,16 @@ def test_get_genres(input_tags, expected_output):
 ])
 def test_listing_is_game(input_categories, expected_output):
     assert listing_is_game(input_categories) == expected_output
+
+
+@patch("extract_epic.load_graph_ql_query")
+def test_process_listings_unavailable_api(fake_query):
+    """Tests that when the API is not available, a reasonable response is still returned from the lambda."""
+
+    with patch('extract_epic.execute_query') as fake_execute:
+        fake_query.return_value = ""
+        fake_execute.side_effect = TransportQueryError("Unavailable API.")
+        listings = process_listings()
+        needed_keys = ["platform", "listings"]
+        assert all([key in listings for key in needed_keys])
+        assert isinstance(listings['listings'], list)

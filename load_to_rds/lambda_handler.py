@@ -3,6 +3,9 @@
 from json import loads
 
 from upload_to_db import load_to_db
+from email_subscribers import send_genre_emails
+
+# pylint: disable=W0613
 
 
 def lambda_handler(event, session):
@@ -13,7 +16,7 @@ def lambda_handler(event, session):
 
     for output in event:
 
-        data = loads(output["body"]["data"])
+        data = output["body"]["data"]
 
         if not isinstance(data, dict):
             data = loads(data)
@@ -21,8 +24,4 @@ def lambda_handler(event, session):
         scraped_data.append(data)
 
     load_to_db(scraped_data)
-
-
-if __name__ == "__main__":
-
-    lambda_handler(None, None)
+    send_genre_emails(scraped_data)
