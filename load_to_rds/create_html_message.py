@@ -35,7 +35,8 @@ def create_html(games: list[dict], genre: str) -> str:
     head = """img {max-width: 20%;max-height: 20%;}"""
     head = put_in_tag(put_in_tag(head, "style"), "head")
 
-    message = put_in_tag(f"Here are all of the newly released games of the {genre_formatted} genre:",
+    message = put_in_tag(f"""Here are all of the newly released
+                         games of the {genre_formatted} genre:""",
                          "h1")
     for game in games:
         message += put_in_tag(put_in_tag(game['title'], "h2"),
