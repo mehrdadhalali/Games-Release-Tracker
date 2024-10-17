@@ -17,7 +17,7 @@ def get_game_urls_from_page(page_html: str) -> list[str]:
 
 
 def get_games_for_the_day(day_time: datetime = datetime.today(),
-                          page_number: int = 1) -> list[dict]:
+                          page_number: int = 1) -> dict:
     """Get all of the details of the games for a given day."""
 
     day = day_time.date()
