@@ -128,7 +128,9 @@ def scrape_game_genres(app_soup: bs4.BeautifulSoup) -> list[str]:
         genre_elements = genres_section.find_all('a', href=True)
         genres = [genre.text.strip()
                   for genre in genre_elements if "genre" in genre['href']]
-    return genres if genres else []
+    else:
+        genres = []
+    return genres
 
 
 def scrape_game_operating_systems(app_soup: bs4.BeautifulSoup) -> list[str]:
