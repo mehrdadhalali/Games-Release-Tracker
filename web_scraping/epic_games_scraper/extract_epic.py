@@ -123,7 +123,7 @@ def process_listings(save_to_file: bool = False) -> None:
         all_listings = get_listings_from_json(response)
         game_listings = [listing for listing in all_listings
                          if listing_is_game(listing['categories'])]
-    except (TransportQueryError):
+    except TransportQueryError:
         game_listings = []
 
     parsed = parse_listings(game_listings)
