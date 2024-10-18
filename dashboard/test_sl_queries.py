@@ -135,7 +135,7 @@ def test_get_game_descriptions(mock_get_connection):
     mock_get_connection.return_value.cursor.return_value = mock_cursor
 
     result = get_game_descriptions(
-        show_nsfw=True, start_date='2020-01-01', end_date='2024-01-01', os_selection='-All-')
+        show_nsfw=True, start_date='2020-01-01', end_date='2024-01-01', os_selection='-All-', genre_selection='-All-')
     assert isinstance(result, list)
     assert len(result) > 0
     assert result[0] == 'Description 1'

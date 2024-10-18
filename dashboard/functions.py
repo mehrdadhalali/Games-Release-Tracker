@@ -62,7 +62,10 @@ def create_line_chart() -> alt.Chart:
         x=alt.X('release_date:T', title='Release Date',
                 axis=alt.Axis(format='%Y-%m-%d')),
         y=alt.Y('total_games:Q', title='Total Games'),
-        tooltip=['release_date:T', 'total_games:Q']
+        tooltip=[
+            alt.Tooltip('release_date:T', title='Release Date'),
+            alt.Tooltip('total_games:Q', title='Total Games Released')
+        ]
     ).properties(
         title=alt.TitleParams(
             text='Daily Count of Unique Game Releases',
@@ -110,6 +113,10 @@ def display_game_table(show_nsfw, os_selection, start_date, end_date, search_que
         table_data = table_data.sort_values("Release Date", ascending=True)
     elif sort_by == "Date (Newest)":
         table_data = table_data.sort_values("Release Date", ascending=False)
+
+    # Display the total number of games
+    total_games = len(table_data)
+    st.write(f"Games Displayed: {total_games}")
 
     # Add clickable links to game titles
     table_data['Title'] = table_data.apply(
@@ -204,7 +211,11 @@ def create_release_line_chart(show_nsfw: bool, os_selection: list[str],
         color=alt.Color('platform_name:N', scale=alt.Scale(
             domain=['Epic', 'GOG', 'Steam'], range=[COLOURS[1], COLOURS[0], COLOURS[3]]),
             title='Platform'),
-        tooltip=['release_date:T', 'release_count:Q', 'platform_name:N']
+        tooltip=[
+            alt.Tooltip('release_date:T', title='Release Date'),
+            alt.Tooltip('release_count:Q', title='Number of Releases'),
+            alt.Tooltip('platform_name:N', title='Platform')
+        ]
     ).properties(
         title=alt.TitleParams(
             text='Daily Game Releases Across Platforms',
@@ -225,7 +236,10 @@ def create_genre_bar_chart(show_nsfw: bool, os_selection: list[str],
         # Sort by x in descending order
         y=alt.Y('genre_name:N', title='Genre', sort='-x'),
         x=alt.X('game_count:Q', title='Number of Games'),
-        tooltip=['genre_name:N', 'game_count:Q']
+        tooltip=[
+            alt.Tooltip('genre_name:N', title='Genre'),
+            alt.Tooltip('game_count:Q', title='Number of Games')
+        ]
     ).properties(
         title=alt.TitleParams(
             text='Most Popular Game Genres',
