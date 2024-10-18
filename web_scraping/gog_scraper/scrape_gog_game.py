@@ -2,8 +2,11 @@
 
 from datetime import datetime
 from urllib.request import urlopen
+import logging
 
 from bs4 import BeautifulSoup
+
+logger = logging.getLogger(__name__)
 
 
 def get_html(url: str) -> str:
@@ -76,6 +79,7 @@ def has_nsfw_warning(game_page) -> bool:
 def get_game_data_from_url(game_url: str) -> dict:
     """Given a game's URL, returns all of its relevant data.
         The only thing that needs processing afterwards is the release date."""
+    logging.basicConfig(filename='myapp.log', level=logging.INFO)
     soup = BeautifulSoup(get_html(game_url), "html.parser")
     title = soup.find(
         "h1", {"class": "productcard-basics__title"}).text.strip()
@@ -107,8 +111,11 @@ def get_game_data_from_url(game_url: str) -> dict:
                                           item_class="details__content table__row-content",
                                           are_links=False)
     operating_systems = format_os(operating_systems)
-    release_date = datetime.strptime(release_date[3:13],
-                                     "%Y-%m-%d")
+    try:
+        release_date = datetime.strptime(release_date[3:13],
+                                         "%Y-%m-%d")
+    except TypeError:
+        logger.info(f"The input to strptime was {release_date}")
     return {"title": title,
             "description": description,
             "img_url": image_url,
