@@ -98,9 +98,16 @@ if __name__ == "__main__":
     st.markdown(
         "<style>.line { border: 0.5px solid; margin: 0; }</style><div class='line'></div>",
         unsafe_allow_html=True)
+    
+    genre_selection = st.selectbox(
+        "Genre:",
+        options=["-All-", "Indie", "Action", "Casual", 
+                 "Adventure", "Simulation", "RPG", "Strategy",
+                 "Sports", "Racing", "Multiplayer"]
+    )
 
     descriptions = get_game_descriptions(
-        show_nsfw, start_date, end_date, os_selection)
+        show_nsfw, start_date, end_date, os_selection, genre_selection)
     word_counts = preprocess_descriptions(descriptions)
     word_cloud_fig = create_word_cloud(word_counts)
     st.pyplot(word_cloud_fig, use_container_width=True)

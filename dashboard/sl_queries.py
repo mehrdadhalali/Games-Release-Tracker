@@ -214,9 +214,9 @@ def get_genre_data(show_nsfw: bool, start_date: str, end_date: str, os_selection
 
 
 @st.cache_data(ttl=900)
-def get_game_descriptions(show_nsfw: bool, start_date: str, end_date: str, os_selection: str) -> list[str]:
+def get_game_descriptions(show_nsfw: bool, start_date: str, end_date: str, os_selection: str, genre_selection: str) -> list[str]:
     """
-    Retrieves game descriptions based on NSFW, date range, and operating system selection.
+    Retrieves game descriptions based on NSFW, date range, operating system, and genre selection.
     """
     query = """
     SELECT g.game_description
@@ -224,6 +224,8 @@ def get_game_descriptions(show_nsfw: bool, start_date: str, end_date: str, os_se
     LEFT JOIN game_listing gl ON g.game_id = gl.game_id
     LEFT JOIN game_os_assignment goa ON g.game_id = goa.game_id
     LEFT JOIN operating_system os ON goa.os_id = os.os_id
+    LEFT JOIN game_genre_assignment gga ON g.game_id = gga.game_id
+    LEFT JOIN genre gen ON gga.genre_id = gen.genre_id
     WHERE (%s OR g.is_nsfw = FALSE)
     AND g.release_date BETWEEN %s AND %s
     """
@@ -233,6 +235,10 @@ def get_game_descriptions(show_nsfw: bool, start_date: str, end_date: str, os_se
     if os_selection != "-All-":
         query += " AND os.os_name = %s"
         params.append(os_selection)
+
+    if genre_selection != "-All-":
+        query += " AND gen.genre_name = %s"
+        params.append(genre_selection)
 
     conn = get_connection()
     cursor = conn.cursor()
