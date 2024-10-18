@@ -12,7 +12,8 @@ from nltk.tokenize import word_tokenize
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 
-from sl_queries import get_game_data, get_weekdays_data, get_daily_game_count, get_daily_releases, get_genre_data
+from sl_queries import (get_game_data, get_weekdays_data,
+                        get_daily_game_count, get_daily_releases, get_genre_data)
 
 COLOURS = ['#6a0dad', '#A26ED5', '#3b5998',
            '#5780d9', '#a80dad', '#e426eb', '#0539f7']
@@ -131,7 +132,8 @@ def display_game_table(show_nsfw, os_selection, start_date, end_date, search_que
     st.markdown(html_table, unsafe_allow_html=True)
 
 
-def create_platform_bar_chart(os_selection: Optional[str], start_date: str, end_date: str, show_nsfw: bool) -> alt.Chart:
+def create_platform_bar_chart(os_selection: Optional[str], start_date: str,
+                              end_date: str, show_nsfw: bool) -> alt.Chart:
     """Chart for the number of games released on each platform."""
     game_data = get_game_data(show_nsfw, start_date, end_date, os_selection)
 
@@ -156,7 +158,8 @@ def create_platform_bar_chart(os_selection: Optional[str], start_date: str, end_
     return bar_chart
 
 
-def create_os_bar_chart(show_nsfw: bool, os_selection: Optional[str], start_date: str, end_date: str) -> alt.Chart:
+def create_os_bar_chart(show_nsfw: bool, os_selection: Optional[str],
+                        start_date: str, end_date: str) -> alt.Chart:
     """Bar chart for releases per operating system."""
     # Get the game data based on the selected filters
     game_data = get_game_data(show_nsfw, start_date, end_date, os_selection)
@@ -187,7 +190,8 @@ def create_os_bar_chart(show_nsfw: bool, os_selection: Optional[str], start_date
     return os_bar_chart
 
 
-def create_release_line_chart(show_nsfw: bool, os_selection: list[str], start_date: str, end_date: str) -> Optional[alt.Chart]:
+def create_release_line_chart(show_nsfw: bool, os_selection: list[str],
+                              start_date: str, end_date: str) -> Optional[alt.Chart]:
     """Line chart for platform releases over time with OS filtering."""
     daily_data = get_daily_releases(
         show_nsfw, start_date, end_date, os_selection)
@@ -223,7 +227,8 @@ def create_release_line_chart(show_nsfw: bool, os_selection: list[str], start_da
     return line_chart
 
 
-def create_genre_bar_chart(show_nsfw: bool, os_selection: list[str], start_date: str, end_date: str) -> alt.Chart:
+def create_genre_bar_chart(show_nsfw: bool, os_selection: list[str],
+                           start_date: str, end_date: str) -> alt.Chart:
     """Creates a horizontal bar chart for genre popularity with OS filtering."""
     genre_data = get_genre_data(show_nsfw, start_date, end_date, os_selection)
 
@@ -252,7 +257,7 @@ def preprocess_descriptions(descriptions: list[str]) -> dict[str, int]:
     and excluding specific words.
     """
     stop_words = set(nltk_stopwords.words('english'))
-    custom_excluded_words = {"game", "play","new", "must", "get", "one", 
+    custom_excluded_words = {"game", "play", "new", "must", "get", "one",
                              "set", "genre", "players", "make", "full", "use"}
 
     cleaned_words = []
@@ -261,7 +266,8 @@ def preprocess_descriptions(descriptions: list[str]) -> dict[str, int]:
         words = word_tokenize(re.sub(r'[^\w\s]', '', desc.lower()))
         # Filter out stop words, custom excluded words, and words shorter than 3 characters
         words = [
-            word for word in words if word not in stop_words and word not in custom_excluded_words and len(word) > 2]
+            word for word in words if word not in
+            stop_words and word not in custom_excluded_words and len(word) > 2]
         cleaned_words.extend(words)
 
     word_counts = Counter(cleaned_words)

@@ -22,7 +22,8 @@ def get_connection() -> connect:
 
 
 @st.cache_data(ttl=900)
-def get_game_data(show_nsfw: bool, start_date: str, end_date: str, os_selection: str, search_query: str = "") -> pd.DataFrame:
+def get_game_data(show_nsfw: bool, start_date: str, end_date: str,
+                  os_selection: str, search_query: str = "") -> pd.DataFrame:
     '''
     Retrieves game information for the dashboard table including
     name, genres, release date, platform, price, and listing URL.
@@ -63,7 +64,8 @@ def get_game_data(show_nsfw: bool, start_date: str, end_date: str, os_selection:
 
     # Add search term filter if provided
     if search_query:
-        query += " AND (g.game_title ILIKE %s OR ge.genre_name ILIKE %s OR p.platform_name ILIKE %s)"
+        query += """ AND (g.game_title ILIKE %s OR ge.genre_name ILIKE
+        %s OR p.platform_name ILIKE %s)"""
         search_param = f"%{search_query}%"
         params.extend([search_param, search_param, search_param])
 
@@ -80,7 +82,8 @@ def get_game_data(show_nsfw: bool, start_date: str, end_date: str, os_selection:
 
     # Convert the result to a pandas DataFrame
     df = pd.DataFrame(result, columns=[
-        'game_name', 'game_genres', 'release_date', 'platform', 'release_price', 'listing_url', 'os_name'
+        'game_name', 'game_genres', 'release_date', 'platform',
+        'release_price', 'listing_url', 'os_name'
     ])
 
     df['release_price'] = df['release_price'] / 100  # Convert to pounds
@@ -92,9 +95,11 @@ def get_game_data(show_nsfw: bool, start_date: str, end_date: str, os_selection:
 
 
 @st.cache_data(ttl=900)
-def get_daily_releases(show_nsfw: bool, start_date: str, end_date: str, os_selection: str) -> pd.DataFrame:
+def get_daily_releases(show_nsfw: bool, start_date: str,
+                       end_date: str, os_selection: str) -> pd.DataFrame:
     """
-    Retrieves the number of games released on each platform between the chosen dates and filters by selected OS.
+    Retrieves the number of games released on each platform 
+    between the chosen dates and filters by selected OS.
     """
     query = """
     SELECT 
@@ -175,9 +180,11 @@ def get_daily_game_count() -> pd.DataFrame:
 
 
 @st.cache_data(ttl=900)
-def get_genre_data(show_nsfw: bool, start_date: str, end_date: str, os_selection: str) -> pd.DataFrame:
+def get_genre_data(show_nsfw: bool, start_date: str,
+                   end_date: str, os_selection: str) -> pd.DataFrame:
     """
-    Retrieves information about the most frequent genres for releases and filters by selected OS.
+    Retrieves information about the most frequent 
+    genres for releases and filters by selected OS.
     """
     query = """
     SELECT 
@@ -215,6 +222,7 @@ def get_genre_data(show_nsfw: bool, start_date: str, end_date: str, os_selection
 
 @st.cache_data(ttl=900)
 def get_game_descriptions(show_nsfw: bool, start_date: str, end_date: str, os_selection: str, genre_selection: str) -> list[str]:
+
     """
     Retrieves game descriptions based on NSFW, date range, operating system, and genre selection.
     """

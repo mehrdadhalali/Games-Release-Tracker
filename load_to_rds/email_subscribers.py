@@ -47,8 +47,8 @@ def send_genre_emails(scraped_data: list[dict]):
 
                 ses.send_email(
                     Source=ENV["SENDER_EMAIL_ADDRESS"],
-                    Destination={"ToAddresses": subscriber_emails,
-                                 "BccAddresses": [],
+                    Destination={"ToAddresses": [],
+                                 "BccAddresses": subscriber_emails,
                                  "CcAddresses": []},
                     Message={
                         "Subject": {
