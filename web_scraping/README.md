@@ -56,3 +56,4 @@ Where `output` is the output of your function.
 4. Push your Docker image to an ECR repository.
 5. Create a Lambda that uses the image.
 6. Add the Lambda to the pre-existing parallel lambdas in the step-function.
+7. Add a new entry to the database, to the `platform` table, with the name of your platform.
